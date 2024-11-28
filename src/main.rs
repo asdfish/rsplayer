@@ -1,9 +1,20 @@
 mod config;
 mod filesystem;
 
-use std::io::Result;
+use std::{
+    boxed::Box,
+    io::{
+        self,
+        Result,
+    },
+    panic,
+};
 
-use crossterm::terminal;
+use crossterm::{
+    cursor,
+    terminal,
+    ExecutableCommand,
+};
 
 #[cfg(unix)]
 use std::thread;
@@ -25,20 +36,32 @@ fn uninit() -> Result<()> {
     if terminal::is_raw_mode_enabled()? {
         terminal::disable_raw_mode()?;
     }
+    io::stdout()
+        .execute(terminal::LeaveAlternateScreen)?
+        .execute(cursor::Show)?;
 
     return Ok(());
 }
 
 fn main() -> Result<()> {
     terminal::enable_raw_mode()?;
+    io::stdout()
+        .execute(terminal::EnterAlternateScreen)?
+        .execute(cursor::Hide)?;
 
+    #[cfg(unix)]
     let mut signals: Signals = Signals::new([SIGINT])?;
+    #[cfg(unix)]
     thread::spawn(move || {
         for signal in &mut signals {
             let _ = uninit();
             panic!("Caught signal: {:?}", signal);
         }
     });
+    panic::set_hook(Box::new(|panic_info| {
+        let _ = uninit();
+        println!("{}", panic_info);
+    }));
 
     let mut playlist_names: Vec<String> = filesystem::get_entries(config::PLAYLISTS_DIRECTORY, filesystem::EntryType::DIRECTORY).unwrap();
     let mut playlists: Vec<Vec<String>> = Vec::new();
@@ -57,12 +80,5 @@ fn main() -> Result<()> {
     }
 
     uninit()?;
-
-    for playlist in 0..playlists.len() {
-        for song in 0..playlists[playlist].len() {
-            println!("{}", get_playlist_song_path(&playlist_names, &playlists, playlist, song));
-        }
-    }
-
     return Ok(());
 }
