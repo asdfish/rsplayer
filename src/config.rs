@@ -1,1 +1,1 @@
-pub const PLAYLISTS_DIRECTORY: &str = "/path/to/your/playlists";
+pub const PLAYLISTS_DIRECTORY: &str = "/home/andre/files/music";

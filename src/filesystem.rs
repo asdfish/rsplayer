@@ -1,6 +1,10 @@
 use std::{
     io::Result,
-    fs,
+    fs::{
+        DirEntry,
+        FileType,
+        read_dir,
+    },
 };
 
 pub enum EntryType {
@@ -8,12 +12,12 @@ pub enum EntryType {
     FILE,
 }
 
-fn directory_entry_is_entry_type(directory_entry: &fs::DirEntry, entry_type: &EntryType) -> bool {
-    let file_type: Result<fs::FileType> = directory_entry.file_type();
+fn directory_entry_is_entry_type(directory_entry: &DirEntry, entry_type: &EntryType) -> bool {
+    let file_type: Result<FileType> = directory_entry.file_type();
     if !file_type.is_ok() {
         return false;
     }
-    let file_type: fs::FileType = file_type.unwrap();
+    let file_type: FileType = file_type.unwrap();
 
 
     return match entry_type {
@@ -25,7 +29,7 @@ fn directory_entry_is_entry_type(directory_entry: &fs::DirEntry, entry_type: &En
 pub fn get_entries(path: &str, entry_type: EntryType) -> Result<Vec<String>> {
     let mut entries: Vec<String> = Vec::new();
 
-    for entry in fs::read_dir(path)? {
+    for entry in read_dir(path)? {
         match entry {
             Result::Ok(entry) => {
                 if ! directory_entry_is_entry_type(&entry, &entry_type) {
