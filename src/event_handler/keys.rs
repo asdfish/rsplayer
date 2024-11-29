@@ -7,36 +7,37 @@ pub struct Binding {
 }
 
 pub struct KeyEventHandler {
+    pub key_bindings: Vec<Binding>,
     pub key_events: Vec<event::KeyEvent>,
 }
 
 impl KeyEventHandler {
-    pub fn new(key_bindings: &Vec<Binding>) -> KeyEventHandler {
+    pub fn new(key_bindings: Vec<Binding>) -> KeyEventHandler {
         let mut event_handler: KeyEventHandler = KeyEventHandler {
+            key_bindings: key_bindings,
             key_events: Vec::new()
         };
 
         let mut max_key_binding_length = 0;
-        for key_binding in key_bindings {
+        for key_binding in &event_handler.key_bindings {
             if key_binding.key_events.len() > max_key_binding_length {
                 max_key_binding_length = key_binding.key_events.len();
             }
         }
         event_handler.key_events.reserve(max_key_binding_length);
-
         return event_handler;
     }
 
-    pub fn update(&mut self, event: event::KeyEvent, key_bindings: &Vec<Binding>) -> bool {
+    pub fn update(&mut self, event: event::KeyEvent) -> bool {
         self.key_events.push(event);
 
         let mut same_event_id: i32 = -1;
         let mut valid_event: bool = false;
-        for i in 0..key_bindings.len() {
-            if Self::same_event(&key_bindings[i].key_events, &self.key_events) {
+        for i in 0..self.key_bindings.len() {
+            if Self::same_event(&self.key_bindings[i].key_events, &self.key_events) {
                 same_event_id = cast!(i);
             }
-            if Self::valid_event(&key_bindings[i].key_events, &self.key_events) {
+            if Self::valid_event(&self.key_bindings[i].key_events, &self.key_events) {
                 valid_event = true;
             }
         }
@@ -49,7 +50,7 @@ impl KeyEventHandler {
         if same_event_id != -1 {
             self.key_events.clear();
             let same_event_id: usize = cast!(same_event_id);
-            return (key_bindings[same_event_id].callback)();
+            return (self.key_bindings[same_event_id].callback)();
         }
 
         return false;

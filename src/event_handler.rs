@@ -1,28 +1,67 @@
-use std::{
-    io::Result,
-    time::Duration,
+use {
+    crate::{
+        config,
+        cast,
+        menu::Menu,
+        rs_player::RsPlayer,
+    },
+    crossterm::{
+        event,
+        terminal,
+    },
+    std::{
+        io::Result,
+        time::Duration,
+    },
 };
-use crate::config;
-use crate::Menu;
-use crossterm::event;
 
 pub mod keys;
-pub mod resize;
 
 pub struct EventHandler {
     key_event_handler: keys::KeyEventHandler,
-    key_bindings: Vec<keys::Binding>,
 }
 
 impl EventHandler {
-    pub fn new(key_bindings: Vec<keys::Binding>) -> EventHandler {
+    pub fn new() -> EventHandler {
         return EventHandler {
-            key_event_handler: keys::KeyEventHandler::new(&key_bindings),
-            key_bindings: key_bindings,
+            key_event_handler: keys::KeyEventHandler::new(config::init_key_bindings()),
         }
     }
 
-    pub fn update(&mut self, main_menu: &mut Menu, sub_menu: &mut Menu) -> Result<bool> {
+    pub fn resize(rs_player: &mut RsPlayer) -> Result<()> {
+        let (width, height) = terminal::size()?;
+
+        Self::resize_main_menu(&mut rs_player.main_menu, width, height);
+        Self::resize_sub_menu(&mut rs_player.sub_menu, width, height);
+
+        return Result::Ok(());
+    }
+    fn resize_main_menu(main_menu: &mut Menu, width: u16, height: u16) {
+        main_menu.x = 0;
+        main_menu.y = 0;
+        match width {
+            0 => main_menu.width = 0,
+            _ => main_menu.width = cast!(width / 2),
+        }
+        main_menu.height = cast!(height);
+    }
+    fn resize_sub_menu(sub_menu: &mut Menu, width: u16, height: u16) {
+        let x: usize = match width {
+            0 => 1,
+            _ => cast!(width / 2),
+        };
+        let width: usize = match width {
+            0 => 1,
+            _ => cast!(width / 2),
+        };
+
+        sub_menu.x = x;
+        sub_menu.width = width;
+        sub_menu.y = 0;
+        sub_menu.height = cast!(height);
+    }
+
+    pub fn update(&mut self, rs_player: &mut RsPlayer) -> Result<bool> {
         if event::poll(Duration::from_millis(config::FRAME_RATE_MS))? {
             let event: event::Event = event::read()?;
 
@@ -30,10 +69,10 @@ impl EventHandler {
 
             match event {
                 event::Event::Key(key_event) => {
-                    self.key_event_handler.update(key_event, &self.key_bindings);
+                    self.key_event_handler.update(key_event);
                 },
                 event::Event::Resize(_, _) => {
-                    resize::resize_menus(main_menu, sub_menu)?;
+                    Self::resize(rs_player)?;
                     redraw = true;
                 }
                 _ => {},

@@ -23,8 +23,11 @@ pub fn bounded_text(width: usize, display_text: &String) -> Result<()> {
         return Result::Ok(());
     }
 
-    let display_text: &str = &display_text[0..width];
-    text(display_text.to_string())?;
+    //let display_text: &str = &display_text[0..width];
+    //text(display_text.to_string())?;
+
+    let display_text: String = display_text.chars().take(width).collect();
+    text(display_text)?;
 
     return Result::Ok(());
 }
