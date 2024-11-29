@@ -31,9 +31,14 @@ impl EventHandler {
     pub fn resize(rs_player: &mut RsPlayer) -> Result<()> {
         let (width, height) = terminal::size()?;
 
+        return Self::resize_to(rs_player, width, height);
+    }
+
+    pub fn resize_to(rs_player: &mut RsPlayer, width: u16, height: u16) -> Result<()> {
         Self::resize_main_menu(&mut rs_player.main_menu, width, height);
         Self::resize_sub_menu(&mut rs_player.sub_menu, width, height);
 
+        rs_player.redraw = true;
         return Result::Ok(());
     }
     fn resize_main_menu(main_menu: &mut Menu, width: u16, height: u16) {
@@ -71,7 +76,7 @@ impl EventHandler {
                 event::Event::Key(key_event) => {
                     self.key_event_handler.update(key_event, rs_player);
                 },
-                event::Event::Resize(_, _) => {
+                event::Event::Resize(width, height) => {
                     Self::resize(rs_player)?;
                     redraw = true;
                 }

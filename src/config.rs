@@ -1,7 +1,7 @@
 use {
     crate::{
+        bind_functions,
         event_handler,
-        rs_player::RsPlayer,
     },
     crossterm::{
         event,
@@ -22,11 +22,6 @@ pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-fn quit(rs_player: &mut RsPlayer) -> bool {
-    rs_player.running = false;
-    return false;
-}
-
 pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
     return vec![
         event_handler::keys::Binding {
@@ -38,7 +33,7 @@ pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
                     state: event::KeyEventState::NONE,
                 },
             ],
-            callback: quit
+            callback: bind_functions::quit
         }
     ];
 }
