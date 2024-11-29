@@ -39,7 +39,7 @@ pub struct RsPlayer {
 
     pub main_menu: Menu,
     pub sub_menu: Menu,
-    pub selected_menu: u8,
+    pub selected_menu: usize,
 
     audio_handler: AudioHandler,
 
@@ -80,6 +80,7 @@ impl RsPlayer {
             redraw: true,
             running: true,
         };
+        rs_player.sub_menu.reverse_colors = false;
 
         EventHandler::resize(&mut rs_player)?;
 
@@ -91,9 +92,6 @@ impl RsPlayer {
             return Result::Ok(());
         }
 
-        self.main_menu.draw(&self.playlist_names)?;
-        self.sub_menu.draw(&self.playlists[self.main_menu.selected])?;
-
         match self.selected_menu {
             0 => {
                 self.main_menu.reverse_colors = true;
@@ -103,8 +101,11 @@ impl RsPlayer {
                 self.main_menu.reverse_colors = false;
                 self.sub_menu.reverse_colors = true;
             },
-            _ => {},
+            _ => unreachable!(),
         };
+
+        self.main_menu.draw(&self.playlist_names)?;
+        self.sub_menu.draw(&self.playlists[self.main_menu.selected])?;
 
         stdout()
             .flush()?;

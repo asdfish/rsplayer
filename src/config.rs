@@ -1,12 +1,13 @@
 use {
     crate::{
-        bind_functions,
+        bind_callback,
         event_handler,
     },
     crossterm::{
         event,
         style,
     },
+    std::boxed::Box,
 };
 
 pub const PLAYLISTS_DIRECTORY: &str = "/home/andre/files/music";
@@ -26,14 +27,60 @@ pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
     return vec![
         event_handler::keys::Binding {
             key_events: vec![
-                event::KeyEvent {
-                    code: event::KeyCode::Char('q'),
-                    modifiers: event::KeyModifiers::NONE,
-                    kind: event::KeyEventKind::Press,
-                    state: event::KeyEventState::NONE,
-                },
+                event::KeyEvent::new(
+                    event::KeyCode::Char('q'),
+                    event::KeyModifiers::NONE
+                ),
             ],
-            callback: bind_functions::quit,
-        }
+            callback: Box::new(bind_callback::Quit {}),
+        },
+        event_handler::keys::Binding {
+            key_events: vec![
+                event::KeyEvent::new(
+                    event::KeyCode::Char('h'),
+                    event::KeyModifiers::NONE
+                ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::X,
+                step: -1,
+            }),
+        },
+        event_handler::keys::Binding {
+            key_events: vec![
+                event::KeyEvent::new(
+                    event::KeyCode::Char('j'),
+                    event::KeyModifiers::NONE
+                ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::Y,
+                step: 1,
+            }),
+        },
+        event_handler::keys::Binding {
+            key_events: vec![
+                event::KeyEvent::new(
+                    event::KeyCode::Char('k'),
+                    event::KeyModifiers::NONE
+                ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::Y,
+                step: -1,
+            }),
+        },
+        event_handler::keys::Binding {
+            key_events: vec![
+                event::KeyEvent::new(
+                    event::KeyCode::Char('l'),
+                    event::KeyModifiers::NONE
+                ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::X,
+                step: 1,
+            }),
+        },
     ];
 }

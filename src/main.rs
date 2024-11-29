@@ -1,5 +1,5 @@
 mod audio_handler;
-mod bind_functions;
+mod bind_callback;
 mod config;
 mod filesystem;
 mod event_handler;

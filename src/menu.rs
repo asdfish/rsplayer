@@ -37,11 +37,13 @@ impl Menu {
             return Ok(());
         }
 
-        if self.cursor > items.len() {
-            self.cursor = items.len();
+        if items.len() != 0 {
+            if self.cursor > items.len() - 1 {
+                self.cursor = items.len();
 
-            if self.cursor != 0 {
-                self.cursor = self.cursor - 1;
+                if self.cursor != 0 {
+                    self.cursor = self.cursor - 1;
+                }
             }
         }
 
