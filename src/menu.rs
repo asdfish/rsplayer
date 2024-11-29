@@ -37,6 +37,14 @@ impl Menu {
             return Ok(());
         }
 
+        if self.cursor > items.len() {
+            self.cursor = items.len();
+
+            if self.cursor != 0 {
+                self.cursor = self.cursor - 1;
+            }
+        }
+
         if self.cursor < self.camera {
             self.camera = self.cursor;
         }
@@ -77,16 +85,12 @@ impl Menu {
     pub fn select(&mut self) {
         self.selected = self.cursor;
     }
-    pub fn move_cursor(&mut self, step: isize, items: &Vec<String>) {
+    pub fn move_cursor(&mut self, step: isize) {
         let cursor: isize = cast!(self.cursor);
         let cursor: isize = cursor + step;
 
         if cursor >= 0 {
             self.cursor = cast!(cursor);
-
-            if self.cursor > items.len() && items.len() != 0 {
-                self.cursor = items.len() - 1;
-            }
         } else {
             self.cursor = 0;
         }
