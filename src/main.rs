@@ -10,7 +10,6 @@ mod rs_player;
 
 use {
     event_handler::EventHandler,
-    menu::Menu,
     rs_player::RsPlayer,
 };
 

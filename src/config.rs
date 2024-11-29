@@ -33,7 +33,7 @@ pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
                     state: event::KeyEventState::NONE,
                 },
             ],
-            callback: bind_functions::quit
+            callback: bind_functions::quit,
         }
     ];
 }

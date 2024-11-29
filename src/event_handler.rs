@@ -66,26 +66,21 @@ impl EventHandler {
         sub_menu.height = cast!(height);
     }
 
-    pub fn update(&mut self, rs_player: &mut RsPlayer) -> Result<bool> {
+    pub fn update(&mut self, rs_player: &mut RsPlayer) -> Result<()> {
         if event::poll(Duration::from_millis(config::FRAME_RATE_MS))? {
             let event: event::Event = event::read()?;
 
-            let mut redraw: bool = false;
-
             match event {
                 event::Event::Key(key_event) => {
-                    self.key_event_handler.update(key_event, rs_player);
+                    self.key_event_handler.update(key_event, rs_player)?;
                 },
-                event::Event::Resize(width, height) => {
+                event::Event::Resize(_, _) => {
                     Self::resize(rs_player)?;
-                    redraw = true;
                 }
                 _ => {},
             }
-
-            return Result::Ok(redraw);
         }
 
-        return Result::Ok(false);
+        return Result::Ok(());
     }
 }

@@ -4,11 +4,12 @@ use {
         rs_player::RsPlayer,
     },
     crossterm::event,
+    std::io::Result,
 };
 
 pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
-    pub callback: fn(rs_player: &mut RsPlayer) -> bool,
+    pub callback: fn(rs_player: &mut RsPlayer),
 }
 
 pub struct KeyEventHandler {
@@ -33,7 +34,7 @@ impl KeyEventHandler {
         return event_handler;
     }
 
-    pub fn update(&mut self, event: event::KeyEvent, rs_player: &mut RsPlayer) -> bool {
+    pub fn update(&mut self, event: event::KeyEvent, rs_player: &mut RsPlayer) -> Result<()> {
         self.key_events.push(event);
 
         let mut same_event_id: i32 = -1;
@@ -49,16 +50,16 @@ impl KeyEventHandler {
 
         if !valid_event {
             self.key_events.clear();
-            return false;
+            return Result::Ok(());
         }
 
         if same_event_id != -1 {
             self.key_events.clear();
             let same_event_id: usize = cast!(same_event_id);
-            return (self.key_bindings[same_event_id].callback)(rs_player);
+            (self.key_bindings[same_event_id].callback)(rs_player);
         }
 
-        return false;
+        return Result::Ok(());
     }
 
     fn same_event(model: &Vec<event::KeyEvent>, follower: &Vec<event::KeyEvent>) -> bool {
