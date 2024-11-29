@@ -41,27 +41,46 @@ fn get_playlist_path(playlist_name: &str) -> String {
     return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
 }
 
-fn resize_menus(menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<()> {
-    let window_size: terminal::WindowSize = terminal::window_size()?;
-
-    resize_main_menu(menu, &window_size);
-    for sub_menu in sub_menus {
-        resize_sub_menu(sub_menu, &window_size);
-    }
+fn draw_menus(main_menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<()> {
+    main_menu.draw()?;
+    sub_menus[main_menu.selected].draw()?;
 
     return Result::Ok(());
 }
-fn resize_main_menu(menu: &mut Menu, window_size: &terminal::WindowSize) {
+
+fn resize_menus(menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<()> {
+    let (width, height) = terminal::size()?;
+
+    resize_main_menu(menu, width, height);
+    resize_sub_menus(sub_menus, width, height);
+
+    return Result::Ok(());
+}
+fn resize_main_menu(menu: &mut Menu, width: u16, height: u16) {
     menu.x = 0;
     menu.y = 0;
-    menu.width = cast!(window_size.width / 2);
-    menu.height = cast!(window_size.height);
+    match width {
+        0 => menu.width = 0,
+        _ => menu.width = cast!(width / 2),
+    }
+    menu.height = cast!(height);
 }
-fn resize_sub_menu(menu: &mut Menu, window_size: &terminal::WindowSize) {
-    menu.x = cast!(window_size.width / 2 + 1);
-    menu.y = 0;
-    menu.width = cast!(window_size.width / 2);
-    menu.height = cast!(window_size.height);
+fn resize_sub_menus(menus: &mut Vec<Menu>, width: u16, height: u16) {
+    let x: usize = match width {
+        0 => 1,
+        _ => cast!(width / 2),
+    };
+    let width: usize = match width {
+        0 => 1,
+        _ => cast!(width / 2),
+    };
+
+    for menu in menus {
+        menu.x = x;
+        menu.width = width;
+        menu.y = 0;
+        menu.height = cast!(height);
+    }
 }
 
 fn uninit() -> Result<()> {
@@ -115,19 +134,15 @@ fn main() {
         }
     }
 
-    let mut main_menu: Menu = Menu::new(config::FOREGROUND, config::FOREGROUND_REVERSED,
-        config::BACKGROUND, config::BACKGROUND_REVERSED,
-
-        playlist_names.clone());
+    let mut main_menu: Menu = Menu::new(playlist_names.clone());
 
     let mut sub_menus: Vec<Menu> = Vec::new();
     for playlist in playlists {
-        sub_menus.push(Menu::new(config::FOREGROUND, config::FOREGROUND_REVERSED,
-                config::BACKGROUND, config::BACKGROUND_REVERSED,
-
-                playlist.clone()));
+        sub_menus.push(Menu::new(playlist.clone()));
     }
     resize_menus(&mut main_menu, &mut sub_menus).unwrap();
+
+    let _ = draw_menus(&mut main_menu, &mut sub_menus);
 
     thread::sleep(std::time::Duration::new(1, 0));
 

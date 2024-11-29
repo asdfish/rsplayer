@@ -1,4 +1,5 @@
 use crate::cast;
+use crate::config;
 use crate::wrappers;
 
 use std::io::{
@@ -12,6 +13,7 @@ use crossterm::{
     style,
 };
 
+#[derive(Debug)]
 pub struct Menu {
     pub x: usize,
     pub y: usize,
@@ -21,10 +23,7 @@ pub struct Menu {
     pub camera: usize,
     pub cursor: usize,
 
-    pub foreground: style::Color,
-    pub foreground_reversed: style::Color,
-    pub background: style::Color,
-    pub background_reversed: style::Color,
+    pub selected: usize,
 
     pub items: Vec<String>,
 
@@ -32,25 +31,24 @@ pub struct Menu {
 }
 
 impl Menu {
-    pub fn new(foreground: style::Color, foreground_reversed: style::Color,
-        background: style::Color, background_reversed: style::Color,
-
-        items: Vec<String>) -> Menu {
-
+    pub fn new(items: Vec<String>) -> Menu {
         return Menu {
             x: 0, y: 0, width: 0, height: 0,
             camera: 0, cursor: 0,
 
-            foreground: foreground, foreground_reversed: foreground_reversed,
-            background: background, background_reversed: background_reversed,
-
             items: items,
+
+            selected: 0,
 
             reverse_colors: true,
         };
     }
 
     pub fn draw(&mut self) -> Result<()> {
+        if self.width == 0 || self.height == 0 {
+            return Ok(());
+        }
+
         if self.cursor < self.camera {
             self.camera = self.cursor;
         }
@@ -62,10 +60,18 @@ impl Menu {
             let item_y = i + self.camera;
             wrappers::cursor::move_to(cast!(self.x), cast!(self.y + i))?;
 
-            if self.reverse_colors && self.cursor == item_y {
-                wrappers::style::set_color(self.foreground_reversed, self.background_reversed)?;
+            if self.selected != item_y {
+                if self.reverse_colors && self.cursor == item_y {
+                    wrappers::style::set_color(config::NORMAL_FOREGROUND_REVERSED, config::NORMAL_BACKGROUND_REVERSED)?;
+                } else {
+                    wrappers::style::set_color(config::NORMAL_FOREGROUND, config::NORMAL_BACKGROUND)?;
+                }
             } else {
-                wrappers::style::set_color(self.foreground, self.background)?;
+                if self.reverse_colors && self.cursor == item_y {
+                    wrappers::style::set_color(config::SELECTED_FOREGROUND_REVERSED, config::SELECTED_BACKGROUND_REVERSED)?;
+                } else {
+                    wrappers::style::set_color(config::SELECTED_FOREGROUND, config::SELECTED_BACKGROUND)?;
+                }
             }
 
             if item_y >= self.items.len() {
@@ -80,7 +86,9 @@ impl Menu {
 
         return Result::Ok(());
     }
-
+    pub fn select(&mut self) {
+        self.selected = self.cursor;
+    }
     pub fn move_cursor(&mut self, step: isize) {
         let cursor: isize = cast!(self.cursor);
         let cursor: isize = cursor + step;
@@ -88,7 +96,7 @@ impl Menu {
         if cursor >= 0 {
             self.cursor = cast!(cursor);
 
-            if self.cursor > self.items.len() {
+            if self.cursor > self.items.len() && self.items.len() != 0 {
                 self.cursor = self.items.len() - 1;
             }
         } else {
