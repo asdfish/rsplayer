@@ -39,7 +39,7 @@ impl Menu {
         };
     }
 
-    pub fn draw(&mut self, stdout: &mut io::Stdout) -> Result<()> {
+    pub fn draw(&mut self) -> Result<()> {
         if self.width == 0 || self.height == 0 {
             return Ok(());
         }
@@ -57,26 +57,26 @@ impl Menu {
 
             if self.selected != item_y {
                 if self.reverse_colors && self.cursor == item_y {
-                    wrappers::style::set_color(&stdout, config::NORMAL_FOREGROUND_REVERSED, config::NORMAL_BACKGROUND_REVERSED)?;
+                    wrappers::style::set_color(config::NORMAL_FOREGROUND_REVERSED, config::NORMAL_BACKGROUND_REVERSED)?;
                 } else {
-                    wrappers::style::set_color(&stdout, config::NORMAL_FOREGROUND, config::NORMAL_BACKGROUND)?;
+                    wrappers::style::set_color(config::NORMAL_FOREGROUND, config::NORMAL_BACKGROUND)?;
                 }
             } else {
                 if self.reverse_colors && self.cursor == item_y {
-                    wrappers::style::set_color(stdout, config::SELECTED_FOREGROUND_REVERSED, config::SELECTED_BACKGROUND_REVERSED)?;
+                    wrappers::style::set_color(config::SELECTED_FOREGROUND_REVERSED, config::SELECTED_BACKGROUND_REVERSED)?;
                 } else {
-                    wrappers::style::set_color(stdout, config::SELECTED_FOREGROUND, config::SELECTED_BACKGROUND)?;
+                    wrappers::style::set_color(config::SELECTED_FOREGROUND, config::SELECTED_BACKGROUND)?;
                 }
             }
 
             if item_y >= self.items.len() {
-                wrappers::print::empty_text(stdout, self.width)?;
-                wrappers::style::reset_color(stdout)?;
+                wrappers::print::empty_text(self.width)?;
+                wrappers::style::reset_color()?;
                 continue;
             }
 
-            wrappers::print::bounded_text(stdout, self.width, &self.items[item_y])?;
-            wrappers::style::reset_color(stdout)?;
+            wrappers::print::bounded_text(self.width, &self.items[item_y])?;
+            wrappers::style::reset_color()?;
         }
 
         return Result::Ok(());
