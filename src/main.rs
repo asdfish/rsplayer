@@ -1,5 +1,6 @@
 mod config;
 mod filesystem;
+mod event_handler;
 mod macros;
 mod menu;
 mod wrappers;
@@ -43,9 +44,9 @@ fn get_playlist_path(playlist_name: &str) -> String {
     return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
 }
 
-fn draw_menus(main_menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<()> {
-    main_menu.draw()?;
-    sub_menus[main_menu.selected].draw()?;
+fn draw_menus(main_menu: &mut Menu, main_menu_items: &Vec<String>, sub_menus: &mut Vec<Menu>, sub_menu_items: &Vec<Vec<String>>) -> Result<()> {
+    main_menu.draw(&main_menu_items)?;
+    sub_menus[main_menu.selected].draw(&sub_menu_items[main_menu.selected])?;
 
     return Result::Ok(());
 }
@@ -137,15 +138,15 @@ fn main() {
         }
     }
 
-    let mut main_menu: Menu = Menu::new(playlist_names.clone());
+    let mut main_menu: Menu = Menu::new();
 
     let mut sub_menus: Vec<Menu> = Vec::new();
-    for playlist in playlists {
-        sub_menus.push(Menu::new(playlist.clone()));
+    for playlist in &playlists {
+        sub_menus.push(Menu::new());
     }
     resize_menus(&mut main_menu, &mut sub_menus).unwrap();
 
-    let _ = draw_menus(&mut main_menu, &mut sub_menus);
+    let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
     let _ = io::stdout()
         .flush();
 

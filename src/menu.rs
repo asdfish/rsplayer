@@ -16,19 +16,15 @@ pub struct Menu {
 
     pub selected: usize,
 
-    pub items: Vec<String>,
-
     pub reverse_colors: bool,
 }
 
 impl Menu {
 
-    pub fn new(items: Vec<String>) -> Menu {
+    pub fn new() -> Menu {
         return Menu {
             x: 0, y: 0, width: 0, height: 0,
             camera: 0, cursor: 0,
-
-            items: items,
 
             selected: 0,
 
@@ -36,7 +32,7 @@ impl Menu {
         };
     }
 
-    pub fn draw(&mut self) -> Result<()> {
+    pub fn draw(&mut self, items: &Vec<String>) -> Result<()> {
         if self.width == 0 || self.height == 0 {
             return Ok(());
         }
@@ -66,13 +62,13 @@ impl Menu {
                 }
             }
 
-            if item_y >= self.items.len() {
+            if item_y >= items.len() {
                 wrappers::print::empty_text(self.width)?;
                 wrappers::style::reset_color()?;
                 continue;
             }
 
-            wrappers::print::bounded_text(self.width, &self.items[item_y])?;
+            wrappers::print::bounded_text(self.width, &items[item_y])?;
             wrappers::style::reset_color()?;
         }
 
@@ -81,15 +77,15 @@ impl Menu {
     pub fn select(&mut self) {
         self.selected = self.cursor;
     }
-    pub fn move_cursor(&mut self, step: isize) {
+    pub fn move_cursor(&mut self, step: isize, items: &Vec<String>) {
         let cursor: isize = cast!(self.cursor);
         let cursor: isize = cursor + step;
 
         if cursor >= 0 {
             self.cursor = cast!(cursor);
 
-            if self.cursor > self.items.len() && self.items.len() != 0 {
-                self.cursor = self.items.len() - 1;
+            if self.cursor > items.len() && items.len() != 0 {
+                self.cursor = items.len() - 1;
             }
         } else {
             self.cursor = 0;
