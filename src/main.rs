@@ -11,6 +11,7 @@ use std::{
     io::{
         self,
         Result,
+        Write,
     },
     panic,
     process,
@@ -41,9 +42,9 @@ fn get_playlist_path(playlist_name: &str) -> String {
     return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
 }
 
-fn draw_menus(main_menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<()> {
-    main_menu.draw()?;
-    sub_menus[main_menu.selected].draw()?;
+fn draw_menus(stdout: &mut io::Stdout, main_menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<()> {
+    main_menu.draw(&stdout)?;
+    sub_menus[main_menu.selected].draw(&stdout)?;
 
     return Result::Ok(());
 }
@@ -111,8 +112,10 @@ fn main() {
         }
     });
 
+    let mut stdout = io::stdout();
+
     terminal::enable_raw_mode().unwrap();
-    io::stdout()
+    stdout
         .execute(terminal::EnterAlternateScreen).unwrap()
         .execute(cursor::Hide).unwrap();
 
@@ -142,7 +145,8 @@ fn main() {
     }
     resize_menus(&mut main_menu, &mut sub_menus).unwrap();
 
-    let _ = draw_menus(&mut main_menu, &mut sub_menus);
+    let _ = draw_menus(&mut stdout, &mut main_menu, &mut sub_menus);
+    let _ = stdout.flush();
 
     thread::sleep(std::time::Duration::new(1, 0));
 
