@@ -16,6 +16,7 @@ use std::{
     },
     panic,
     process,
+    time::Duration,
 };
 
 use crossterm::{
@@ -146,11 +147,19 @@ fn main() {
     }
     resize_menus(&mut main_menu, &mut sub_menus).unwrap();
 
-    let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
-    let _ = io::stdout()
-        .flush();
+    let key_bindings: Vec<event_handler::keys::Binding> = config::init_key_bindings();
 
-    thread::sleep(std::time::Duration::new(10000, 0));
+    let mut event_handler: event_handler::EventHandler = event_handler::EventHandler::new(key_bindings);
+
+    loop {
+        let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
+        let _ = io::stdout()
+            .flush();
+
+        event_handler.update().unwrap();
+
+        thread::sleep(Duration::from_millis(config::FRAME_RATE_MS));
+    }
 
     uninit().unwrap();
 }

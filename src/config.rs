@@ -15,22 +15,24 @@ pub const SELECTED_FOREGROUND_REVERSED: style::Color = style::Color::Red;
 pub const SELECTED_BACKGROUND: style::Color = style::Color::Black;
 pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
-fn cb() {
-    println!("hello from cb");
+pub const FRAME_RATE_MS: u64 = 1000 / 24;
+
+fn quit() {
+    panic!("quitting");
 }
 
-pub fn init_key_bindings() -> Vec<event_handler::keys::Event> {
+pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
     return vec![
-        event_handler::keys::Event {
+        event_handler::keys::Binding {
             key_events: vec![
                 event::KeyEvent {
-                    code: event::KeyCode::Char('d'),
+                    code: event::KeyCode::Char('q'),
                     modifiers: event::KeyModifiers::NONE,
                     kind: event::KeyEventKind::Press,
                     state: event::KeyEventState::NONE,
                 },
             ],
-            callback: cb
+            callback: quit
         }
     ];
 }

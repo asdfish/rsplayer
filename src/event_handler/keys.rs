@@ -1,7 +1,7 @@
 use crate::cast;
 use crossterm::event;
 
-pub struct Event {
+pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
     pub callback: fn(),
 }
@@ -11,7 +11,7 @@ pub struct KeyEventHandler {
 }
 
 impl KeyEventHandler {
-    fn new(key_bindings: &Vec<Event>) -> KeyEventHandler {
+    pub fn new(key_bindings: &Vec<Binding>) -> KeyEventHandler {
         let mut event_handler: KeyEventHandler = KeyEventHandler {
             key_events: Vec::new()
         };
@@ -27,7 +27,7 @@ impl KeyEventHandler {
         return event_handler;
     }
 
-    pub fn update(&mut self, event: event::KeyEvent, key_bindings: &Vec<Event>) {
+    pub fn update(&mut self, event: event::KeyEvent, key_bindings: &Vec<Binding>) {
         self.key_events.push(event);
 
         let mut same_event_id: i32 = -1;
