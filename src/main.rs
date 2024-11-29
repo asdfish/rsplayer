@@ -121,8 +121,6 @@ fn main() {
             .flush();
 
         event_handler.update(&mut main_menu, &mut sub_menus).unwrap();
-
-        thread::sleep(Duration::from_millis(config::FRAME_RATE_MS));
     }
 
     uninit().unwrap();
