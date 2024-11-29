@@ -1,3 +1,4 @@
+mod audio_handler;
 mod config;
 mod filesystem;
 mod event_handler;
@@ -43,9 +44,9 @@ fn get_playlist_path(playlist_name: &str) -> String {
     return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
 }
 
-fn draw_menus(main_menu: &mut Menu, main_menu_items: &Vec<String>, sub_menus: &mut Vec<Menu>, sub_menu_items: &Vec<Vec<String>>) -> Result<()> {
+fn draw_menus(main_menu: &mut Menu, main_menu_items: &Vec<String>, sub_menu: &mut Menu, sub_menu_items: &Vec<Vec<String>>) -> Result<()> {
     main_menu.draw(&main_menu_items)?;
-    sub_menus[main_menu.selected].draw(&sub_menu_items[main_menu.selected])?;
+    sub_menu.draw(&sub_menu_items[main_menu.selected])?;
 
     return Result::Ok(());
 }
@@ -104,11 +105,8 @@ fn main() {
 
     let mut main_menu: Menu = Menu::new();
 
-    let mut sub_menus: Vec<Menu> = Vec::new();
-    for _ in &playlists {
-        sub_menus.push(Menu::new());
-    }
-    event_handler::resize::resize_menus(&mut main_menu, &mut sub_menus).unwrap();
+    let mut sub_menu: Menu = Menu::new();
+    event_handler::resize::resize_menus(&mut main_menu, &mut sub_menu).unwrap();
 
     let key_bindings: Vec<event_handler::keys::Binding> = config::init_key_bindings();
     let mut event_handler: event_handler::EventHandler = event_handler::EventHandler::new(key_bindings);
@@ -116,12 +114,12 @@ fn main() {
     let mut redraw: bool = true;
     loop {
         if redraw {
-            let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
+            let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menu, &playlists);
             let _ = io::stdout()
                 .flush();
         }
 
-        redraw = event_handler.update(&mut main_menu, &mut sub_menus).unwrap();
+        redraw = event_handler.update(&mut main_menu, &mut sub_menu).unwrap();
     }
 
     uninit().unwrap();

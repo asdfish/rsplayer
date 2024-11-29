@@ -22,7 +22,7 @@ impl EventHandler {
         }
     }
 
-    pub fn update(&mut self, main_menu: &mut Menu, sub_menus: &mut Vec<Menu>) -> Result<bool> {
+    pub fn update(&mut self, main_menu: &mut Menu, sub_menu: &mut Menu) -> Result<bool> {
         if event::poll(Duration::from_millis(config::FRAME_RATE_MS))? {
             let event: event::Event = event::read()?;
 
@@ -33,7 +33,7 @@ impl EventHandler {
                     self.key_event_handler.update(key_event, &self.key_bindings);
                 },
                 event::Event::Resize(_, _) => {
-                    resize::resize_menus(main_menu, sub_menus)?;
+                    resize::resize_menus(main_menu, sub_menu)?;
                     redraw = true;
                 }
                 _ => {},
