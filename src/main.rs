@@ -107,7 +107,7 @@ fn main() {
     let mut main_menu: Menu = Menu::new();
 
     let mut sub_menus: Vec<Menu> = Vec::new();
-    for playlist in &playlists {
+    for _ in &playlists {
         sub_menus.push(Menu::new());
     }
     event_handler::resize::resize_menus(&mut main_menu, &mut sub_menus).unwrap();
@@ -115,12 +115,15 @@ fn main() {
     let key_bindings: Vec<event_handler::keys::Binding> = config::init_key_bindings();
     let mut event_handler: event_handler::EventHandler = event_handler::EventHandler::new(key_bindings);
 
+    let mut redraw: bool = true;
     loop {
-        let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
-        let _ = io::stdout()
-            .flush();
+        if(redraw) {
+            let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
+            let _ = io::stdout()
+                .flush();
+        }
 
-        event_handler.update(&mut main_menu, &mut sub_menus).unwrap();
+        redraw = event_handler.update(&mut main_menu, &mut sub_menus).unwrap();
     }
 
     uninit().unwrap();

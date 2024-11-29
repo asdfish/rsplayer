@@ -17,8 +17,9 @@ pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-fn quit() {
+fn quit() -> bool {
     panic!("quitting");
+    return false;
 }
 
 pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
