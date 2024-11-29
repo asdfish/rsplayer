@@ -1,4 +1,5 @@
 use crate::cast;
+use crate::wrappers;
 
 use std::io::{
     self,
@@ -10,63 +11,6 @@ use crossterm::{
     cursor,
     style,
 };
-
-fn cursor_move_to(x: u16, y: u16) -> Result<()> {
-    io::stdout()
-        .execute(cursor::MoveTo(x, y))?;
-
-    return Result::Ok(());
-}
-
-fn print_bounded_text(width: usize, text: &String) -> Result<()> {
-    if text.len() == width {
-        print_text_borrow(&text)?;
-        return Result::Ok(());
-    }
-
-    if text.len() < width {
-        print_text_borrow(text)?;
-
-        let x = text.len();
-        print_empty_text(width - x)?;
-
-        return Result::Ok(());
-    }
-
-    let text: &str = &text[0..width];
-    print_text(text.to_string())?;
-
-    return Result::Ok(());
-}
-fn print_empty_text(width: usize) -> Result<()> {
-    for _ in 0..width {
-        print_text(" ".to_string())?;
-    }
-
-    return Result::Ok(());
-}
-fn print_text(text: String) -> Result<()> {
-    return print_text_borrow(&text);
-}
-fn print_text_borrow(text: &String) -> Result<()> {
-    io::stdout()
-        .execute(style::Print(text))?;
-    return Result::Ok(());
-}
-
-fn style_set_color(foreground: style::Color, background: style::Color) -> Result<()> {
-    io::stdout()
-        .execute(style::SetForegroundColor(foreground))?
-        .execute(style::SetBackgroundColor(background))?;
-
-    return Result::Ok(());
-}
-fn style_reset_color() -> Result<()> {
-    io::stdout()
-        .execute(style::ResetColor)?;
-
-    return Result::Ok(());
-}
 
 pub struct Menu {
     pub x: usize,
@@ -116,22 +60,22 @@ impl Menu {
 
         for i in 0..self.height {
             let item_y = i + self.camera;
-            cursor_move_to(cast!(self.x), cast!(self.y + i))?;
+            wrappers::cursor::move_to(cast!(self.x), cast!(self.y + i))?;
 
             if self.reverse_colors && self.cursor == item_y {
-                style_set_color(self.foreground_reversed, self.background_reversed)?;
+                wrappers::style::set_color(self.foreground_reversed, self.background_reversed)?;
             } else {
-                style_set_color(self.foreground, self.background)?;
+                wrappers::style::set_color(self.foreground, self.background)?;
             }
 
             if item_y >= self.items.len() {
-                print_empty_text(self.width)?;
-                style_reset_color()?;
+                wrappers::print::empty_text(self.width)?;
+                wrappers::style::reset_color()?;
                 continue;
             }
 
-            print_bounded_text(self.width, &self.items[item_y])?;
-            style_reset_color()?;
+            wrappers::print::bounded_text(self.width, &self.items[item_y])?;
+            wrappers::style::reset_color()?;
         }
 
         return Result::Ok(());

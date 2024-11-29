@@ -2,6 +2,7 @@ mod config;
 mod filesystem;
 mod macros;
 mod menu;
+mod wrappers;
 
 use menu::Menu;
 
