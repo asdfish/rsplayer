@@ -22,7 +22,7 @@ fn cb() {
 pub fn init_key_bindings() -> Vec<event_handler::keys::Event> {
     return vec![
         event_handler::keys::Event {
-            keys: vec![
+            key_events: vec![
                 event::KeyEvent {
                     code: event::KeyCode::Char('d'),
                     modifiers: event::KeyModifiers::NONE,
@@ -34,17 +34,3 @@ pub fn init_key_bindings() -> Vec<event_handler::keys::Event> {
         }
     ];
 }
-
-//static key_bindings: Vec<event_handler::keys::Event> = vec![
-//    event_handler::keys::Event {
-//        keys: vec![
-//            event::KeyEvent {
-//                code: event::KeyCode::Char('d'),
-//                modifiers: event::KeyModifiers::NONE,
-//                kind: event::KeyEventKind::Press,
-//                state: event::KeyEventState::NONE,
-//            },
-//        ],
-//        callback: cb,
-//    }
-//];
