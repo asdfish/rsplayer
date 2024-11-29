@@ -16,12 +16,10 @@ use std::{
     },
     panic,
     process,
-    time::Duration,
 };
 
 use crossterm::{
     cursor,
-    event,
     terminal,
     ExecutableCommand,
 };
@@ -117,7 +115,7 @@ fn main() {
 
     let mut redraw: bool = true;
     loop {
-        if(redraw) {
+        if redraw {
             let _ = draw_menus(&mut main_menu, &playlist_names, &mut sub_menus, &playlists);
             let _ = io::stdout()
                 .flush();
