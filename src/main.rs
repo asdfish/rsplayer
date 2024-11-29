@@ -28,7 +28,7 @@ fn main() {
     let mut rs_player: RsPlayer = RsPlayer::new().unwrap();
     let mut event_handler: EventHandler = EventHandler::new();
 
-    loop {
+    while rs_player.running {
         let _ = rs_player.draw();
         let _ = event_handler.update(&mut rs_player);
     }

@@ -41,6 +41,8 @@ pub struct RsPlayer {
     pub sub_menu: Menu,
 
     audio_handler: AudioHandler,
+
+    pub running: bool,
 }
 
 impl RsPlayer {
@@ -71,6 +73,8 @@ impl RsPlayer {
             sub_menu: Menu::new(),
 
             audio_handler: AudioHandler::new(),
+
+            running: true,
         };
 
         EventHandler::resize(&mut rs_player)?;
@@ -139,6 +143,4 @@ impl RsPlayer {
     fn get_playlist_path(playlist_name: &str) -> String {
         return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
     }
-
-
 }

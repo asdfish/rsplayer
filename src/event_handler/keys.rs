@@ -1,9 +1,14 @@
-use crate::cast;
-use crossterm::event;
+use {
+    crate::{
+        cast,
+        rs_player::RsPlayer,
+    },
+    crossterm::event,
+};
 
 pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
-    pub callback: fn() -> bool,
+    pub callback: fn(rs_player: &mut RsPlayer) -> bool,
 }
 
 pub struct KeyEventHandler {
@@ -28,7 +33,7 @@ impl KeyEventHandler {
         return event_handler;
     }
 
-    pub fn update(&mut self, event: event::KeyEvent) -> bool {
+    pub fn update(&mut self, event: event::KeyEvent, rs_player: &mut RsPlayer) -> bool {
         self.key_events.push(event);
 
         let mut same_event_id: i32 = -1;
@@ -50,7 +55,7 @@ impl KeyEventHandler {
         if same_event_id != -1 {
             self.key_events.clear();
             let same_event_id: usize = cast!(same_event_id);
-            return (self.key_bindings[same_event_id].callback)();
+            return (self.key_bindings[same_event_id].callback)(rs_player);
         }
 
         return false;

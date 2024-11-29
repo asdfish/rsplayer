@@ -69,7 +69,7 @@ impl EventHandler {
 
             match event {
                 event::Event::Key(key_event) => {
-                    self.key_event_handler.update(key_event);
+                    self.key_event_handler.update(key_event, rs_player);
                 },
                 event::Event::Resize(_, _) => {
                     Self::resize(rs_player)?;

@@ -1,7 +1,12 @@
-use crate::event_handler;
-use crossterm::{
-    event,
-    style,
+use {
+    crate::{
+        event_handler,
+        rs_player::RsPlayer,
+    },
+    crossterm::{
+        event,
+        style,
+    },
 };
 
 pub const PLAYLISTS_DIRECTORY: &str = "/home/andre/files/music";
@@ -17,8 +22,8 @@ pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-fn quit() -> bool {
-    panic!("quitting");
+fn quit(rs_player: &mut RsPlayer) -> bool {
+    rs_player.running = false;
     return false;
 }
 
