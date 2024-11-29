@@ -19,6 +19,7 @@ use std::{
 
 use crossterm::{
     cursor,
+    event,
     terminal,
     ExecutableCommand,
 };
@@ -103,14 +104,15 @@ fn main() {
     }));
 
     #[cfg(unix)]
-    let mut signals: Signals = Signals::new([SIGINT, SIGTERM]).unwrap();
-    #[cfg(unix)]
-    thread::spawn(move || {
-        for signal in &mut signals {
-            let _ = uninit();
-            panic!("Caught signal: {:?}", signal);
-        }
-    });
+    {
+        let mut signals: Signals = Signals::new([SIGINT, SIGTERM]).unwrap();
+        thread::spawn(move || {
+            for signal in &mut signals {
+                let _ = uninit();
+                panic!("Caught signal: {:?}", signal);
+            }
+        });
+    }
 
     terminal::enable_raw_mode().unwrap();
     io::stdout()
@@ -147,7 +149,7 @@ fn main() {
     let _ = io::stdout()
         .flush();
 
-    thread::sleep(std::time::Duration::new(1, 0));
+    thread::sleep(std::time::Duration::new(10000, 0));
 
     uninit().unwrap();
 }

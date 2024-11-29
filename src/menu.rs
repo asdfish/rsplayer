@@ -2,10 +2,7 @@ use crate::cast;
 use crate::config;
 use crate::wrappers;
 
-use std::io::{
-    self,
-    Result,
-};
+use std::io::Result;
 
 #[derive(Debug)]
 pub struct Menu {
