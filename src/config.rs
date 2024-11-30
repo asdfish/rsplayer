@@ -31,7 +31,8 @@ pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 2] = [
+pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
+    switch_song_callback::callback_random,
     switch_song_callback::callback_next,
     switch_song_callback::callback_loop,
 ];

@@ -203,4 +203,8 @@ impl RsPlayer {
     pub fn get_playlist_song_path(playlist_name: &str, song_name: &str) -> String {
         return format!("{}/{}", Self::get_playlist_path(playlist_name), song_name);
     }
+
+    pub fn get_current_playlist(&self) -> &Vec<String> {
+        return &self.playlists[self.main_menu.selected];
+    }
 }
