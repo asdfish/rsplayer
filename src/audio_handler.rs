@@ -2,7 +2,6 @@ use {
     std::{
         io::BufReader,
         fs::File,
-        time::Duration,
     },
     rodio::{
         Decoder,
@@ -11,6 +10,7 @@ use {
     },
 };
 
+#[allow(dead_code)]
 pub struct AudioHandler {
     stream: OutputStream, // must be kept alive
     sink: Sink,

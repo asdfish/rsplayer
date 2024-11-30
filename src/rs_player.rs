@@ -103,7 +103,7 @@ impl RsPlayer {
         // set sub_menu.selection to saved value
         self.sub_menu.selected = self.sub_menu_selections[new_sub_menu];
 
-        self.main_menu.select_at(new_sub_menu);
+        self.main_menu.selected = new_sub_menu;
     }
 
     pub fn draw(&mut self) -> Result<()> {

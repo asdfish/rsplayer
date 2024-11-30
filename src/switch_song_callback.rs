@@ -1,7 +1,4 @@
-use {
-    crate::rs_player::RsPlayer,
-    std::time::Duration,
-};
+use crate::rs_player::RsPlayer;
 
 pub type SwitchSongCallback = fn(rs_player: &mut RsPlayer);
 

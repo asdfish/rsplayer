@@ -1,5 +1,4 @@
 use crate::{
-    config,
     menu::Menu,
     rs_player::RsPlayer,
 };
