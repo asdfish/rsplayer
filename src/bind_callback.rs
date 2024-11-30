@@ -1,6 +1,4 @@
 use crate::{
-    cast,
-    get_menu,
     menu::Menu,
     rs_player::RsPlayer,
 };
@@ -46,6 +44,10 @@ impl Callback for Select {
             },
             1 => {
                 rs_player.sub_menu.select();
+                rs_player.audio_handler.play(RsPlayer::get_playlist_song_path(
+                        &rs_player.playlist_names[rs_player.main_menu.selected],
+                        &rs_player.playlists[rs_player.main_menu.selected][rs_player.sub_menu.selected],
+                ));
             },
             _ => unreachable!(),
         }

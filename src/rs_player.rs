@@ -34,8 +34,8 @@ use {
 };
 
 pub struct RsPlayer {
-    playlist_names: Vec<String>,
-    playlists: Vec<Vec<String>>,
+    pub playlist_names: Vec<String>,
+    pub playlists: Vec<Vec<String>>,
 
     pub main_menu: Menu,
     pub sub_menu: Menu,
@@ -43,7 +43,7 @@ pub struct RsPlayer {
 
     pub sub_menu_selections: Vec<usize>,
 
-    audio_handler: AudioHandler,
+    pub audio_handler: AudioHandler,
 
     pub redraw: bool,
     pub running: bool,
@@ -100,7 +100,6 @@ impl RsPlayer {
         self.sub_menu.selected = self.sub_menu_selections[new_sub_menu];
 
         self.main_menu.select_at(new_sub_menu);
-        self.redraw = true;
     }
 
     pub fn draw(&mut self) -> Result<()> {
@@ -178,7 +177,10 @@ impl RsPlayer {
         return Result::Ok(());
     }
 
-    fn get_playlist_path(playlist_name: &str) -> String {
+    pub fn get_playlist_path(playlist_name: &str) -> String {
         return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
+    }
+    pub fn get_playlist_song_path(playlist_name: &str, song_name: &str) -> String {
+        return format!("{}/{}", Self::get_playlist_path(playlist_name), song_name);
     }
 }
