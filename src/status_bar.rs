@@ -4,9 +4,11 @@ use {
         wrappers::{
             cursor,
             print,
+            style,
         },
         menu_handler::MenuHandler,
     },
+    crossterm::style::Color,
     std::{
         boxed::Box,
         io::Result,
@@ -35,7 +37,7 @@ impl StatusBar {
     pub fn draw(&self) -> Result<()> {
         cursor::move_to(0, 0)?;
         for module_handler in &self.module_handlers {
-            print::text_borrow(&module_handler.print_string)?;
+            module_handler.draw()?;
         }
 
         return Result::Ok(());
@@ -49,6 +51,9 @@ impl StatusBar {
 }
 
 pub struct ModuleHandler {
+    foreground: Color,
+    background: Color,
+
     update_interval: Duration,
     module: Box<dyn StatusBarModule>,
 
@@ -56,14 +61,24 @@ pub struct ModuleHandler {
     last_update: Instant,
 }
 impl ModuleHandler {
-    pub fn new(update_interval: Duration, module: Box<dyn StatusBarModule>) -> ModuleHandler {
+    pub fn new(foreground: Color, background: Color, update_interval: Duration, module: Box<dyn StatusBarModule>) -> ModuleHandler {
         return ModuleHandler {
+            foreground: foreground,
+            background: background,
+
             update_interval: update_interval,
             module: module,
 
             print_string: String::new(),
             last_update: Instant::now(),
         };
+    }
+
+    pub fn draw(&self) -> Result<()> {
+        style::set_color(self.foreground, self.background)?;
+        print::text_borrow(&self.print_string)?;
+
+        return Result::Ok(());
     }
 
     pub fn update(&mut self, menu_handler: &MenuHandler) {

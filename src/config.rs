@@ -15,7 +15,10 @@ use {
             KeyCode,
             KeyModifiers,
         },
-        style,
+        style::{
+            self,
+            Color,
+        },
     },
     std::{
         boxed::Box,
@@ -25,14 +28,14 @@ use {
 
 pub const PLAYLISTS_DIRECTORY: &str = "/home/andre/files/music";
 
-pub const NORMAL_FOREGROUND: style::Color = style::Color::White;
-pub const NORMAL_FOREGROUND_REVERSED: style::Color = style::Color::Black;
-pub const NORMAL_BACKGROUND: style::Color = style::Color::Black;
-pub const NORMAL_BACKGROUND_REVERSED: style::Color = style::Color::White;
-pub const SELECTED_FOREGROUND: style::Color = style::Color::Red;
-pub const SELECTED_FOREGROUND_REVERSED: style::Color = style::Color::Red;
-pub const SELECTED_BACKGROUND: style::Color = style::Color::Black;
-pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
+pub const NORMAL_FOREGROUND: Color = Color::White;
+pub const NORMAL_FOREGROUND_REVERSED: Color = Color::Black;
+pub const NORMAL_BACKGROUND: Color = Color::Black;
+pub const NORMAL_BACKGROUND_REVERSED: Color = Color::White;
+pub const SELECTED_FOREGROUND: Color = Color::Red;
+pub const SELECTED_FOREGROUND_REVERSED: Color = Color::Red;
+pub const SELECTED_BACKGROUND: Color = Color::Black;
+pub const SELECTED_BACKGROUND_REVERSED: Color = Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
@@ -134,7 +137,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
 
 pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
     return vec![
-        status_bar::ModuleHandler::new(Duration::from_secs(1), Box::new(
+        status_bar::ModuleHandler::new(Color::White, Color::Black, Duration::from_secs(1), Box::new(
             status_bar::PlayDuration::new(
                 move |duration: Duration| {
                     fn pad_usize(num: usize) -> String {
