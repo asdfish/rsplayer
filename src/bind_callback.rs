@@ -1,4 +1,5 @@
 use crate::{
+    config,
     menu::Menu,
     rs_player::RsPlayer,
 };
@@ -37,6 +38,13 @@ impl BindingCallback for MoveCursor {
         }
 
         rs_player.redraw = true;
+    }
+}
+
+pub struct SwitchSong {}
+impl BindingCallback for SwitchSong {
+    fn callback(&self, rs_player: &mut RsPlayer) {
+        rs_player.switch_song();
     }
 }
 

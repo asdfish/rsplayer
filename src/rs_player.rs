@@ -47,6 +47,8 @@ pub struct RsPlayer {
 
     pub redraw: bool,
     pub running: bool,
+
+    pub switch_song_callback: usize,
 }
 
 impl RsPlayer {
@@ -85,6 +87,8 @@ impl RsPlayer {
 
             redraw: true,
             running: true,
+
+            switch_song_callback: 0,
         };
         rs_player.sub_menu.reverse_colors = false;
 
@@ -177,6 +181,10 @@ impl RsPlayer {
         return Result::Ok(());
     }
 
+    pub fn switch_song(&mut self) {
+        config::SWITCH_SONG_CALLBACKS[self.switch_song_callback](self);
+        self.redraw = true;
+    }
     pub fn switch_song_to(&mut self, song: usize) {
         self.sub_menu.selected = if song > self.playlists[self.main_menu.selected].len() {
             self.playlists[self.main_menu.selected].len()

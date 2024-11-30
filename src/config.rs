@@ -1,8 +1,10 @@
 use {
     crate::{
         bind_callback,
-        event_handler::{
-            keys::Binding
+        event_handler::keys::Binding,
+        switch_song_callback::{
+            self,
+            SwitchSongCallback,
         },
     },
     crossterm::{
@@ -28,6 +30,11 @@ pub const SELECTED_BACKGROUND: style::Color = style::Color::Black;
 pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
+
+pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 2] = [
+    switch_song_callback::callback_next,
+    switch_song_callback::callback_loop,
+];
 
 pub fn init_key_bindings() -> Vec<Binding> {
     return vec![
@@ -109,6 +116,12 @@ pub fn init_key_bindings() -> Vec<Binding> {
                 KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::Select {}),
+        },
+        Binding {
+            key_events: vec![
+                KeyEvent::new( KeyCode::Char('s'), KeyModifiers::NONE ),
+            ],
+            callback: Box::new(bind_callback::SwitchSong {}),
         },
     ];
 }
