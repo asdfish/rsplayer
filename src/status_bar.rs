@@ -26,9 +26,14 @@ pub struct StatusBar {
     module_handlers: Vec<ModuleHandler>,
 }
 impl StatusBar {
-    pub fn new() -> StatusBar {
+    pub fn new(menu_handler: &MenuHandler) -> StatusBar {
+        let mut module_handlers: Vec<ModuleHandler> = config::init_status_bar();
+        for module_handler in &mut module_handlers {
+            module_handler.update_force(menu_handler);
+        }
+
         return StatusBar {
-            module_handlers: config::init_status_bar(),
+            module_handlers: module_handlers,
         };
     }
 
@@ -70,8 +75,11 @@ impl ModuleHandler {
         let now: Instant = Instant::now();
 
         if now.duration_since(self.last_update) > self.update_interval {
-            self.print_string = self.module.output(menu_handler);
+            self.update_force(menu_handler);
         }
+    }
+    pub fn update_force(&mut self, menu_handler: &MenuHandler) {
+        self.print_string = self.module.output(menu_handler);
     }
 }
 

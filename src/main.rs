@@ -22,8 +22,8 @@ use {
 };
 
 fn main() {
-    let mut status_bar: StatusBar = StatusBar::new();
     let mut menu_handler: MenuHandler = MenuHandler::new().unwrap();
+    let mut status_bar: StatusBar = StatusBar::new(&menu_handler);
     let mut event_handler: EventHandler = EventHandler::new();
 
     menu_handler.switch_song_to(0);
