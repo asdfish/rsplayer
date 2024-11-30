@@ -13,3 +13,4 @@ signal-hook = "0.3.17"
 
 [features]
 default = [ "play_duration_module" ]
+play_duration_module = []

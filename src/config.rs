@@ -1,5 +1,6 @@
 use {
     crate::{
+        cast,
         bind_callback,
         event_handler::keys::Binding,
         switch_song_callback::{
@@ -135,8 +136,22 @@ pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
     return vec![
         status_bar::ModuleHandler::new(Duration::from_secs(1), Box::new(
             status_bar::PlayDuration::new(
-                |duration: Duration| {
-                    return String::from("asdf")
+                move |duration: Duration| {
+                    fn pad_usize(num: usize) -> String {
+                        return if num < 10 {
+                            "0".to_string() + &num.to_string()
+                        } else {
+                            num.to_string()
+                        }
+                    }
+
+                    let seconds: usize = cast!(duration.as_secs());
+                    let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
+
+                    let seconds: String = pad_usize(seconds);
+                    let minutes: String = pad_usize(minutes);
+
+                    return minutes + ":" + &seconds.to_string();
                 }
             ),
         )),
