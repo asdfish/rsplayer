@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.28.1"
+fastrand = { version = "2.2.0", features = [ "std" ] }
 rodio = "0.20.1"
 
 [target.'cfg(unix)'.dependencies]
