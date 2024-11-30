@@ -37,6 +37,23 @@ impl Callback for MoveCursor {
     }
 }
 
+pub struct Select {}
+impl Callback for Select {
+    fn callback(&self, rs_player: &mut RsPlayer) {
+        match rs_player.selected_menu {
+            0 => {
+                rs_player.change_sub_menu(rs_player.main_menu.cursor);
+            },
+            1 => {
+                rs_player.sub_menu.select();
+            },
+            _ => unreachable!(),
+        }
+
+        rs_player.redraw = true;
+    }
+}
+
 pub struct Quit {}
 impl Callback for Quit {
     fn callback(&self, rs_player: &mut RsPlayer) {

@@ -82,5 +82,14 @@ pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
                 step: 1,
             }),
         },
+        event_handler::keys::Binding {
+            key_events: vec![
+                event::KeyEvent::new(
+                    event::KeyCode::Enter,
+                    event::KeyModifiers::NONE
+                ),
+            ],
+            callback: Box::new(bind_callback::Select {}),
+        },
     ];
 }

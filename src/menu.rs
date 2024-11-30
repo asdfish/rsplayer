@@ -85,7 +85,10 @@ impl Menu {
         return Result::Ok(());
     }
     pub fn select(&mut self) {
-        self.selected = self.cursor;
+        self.select_at(self.cursor);
+    }
+    pub fn select_at(&mut self, at: usize) {
+        self.selected = at;
     }
     pub fn move_cursor(&mut self, step: isize) {
         let cursor: isize = cast!(self.cursor);

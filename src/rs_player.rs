@@ -41,6 +41,8 @@ pub struct RsPlayer {
     pub sub_menu: Menu,
     pub selected_menu: usize,
 
+    pub sub_menu_selections: Vec<usize>,
+
     audio_handler: AudioHandler,
 
     pub redraw: bool,
@@ -53,6 +55,8 @@ impl RsPlayer {
 
         let playlist_names: Vec<String> = filesystem::get_entries(config::PLAYLISTS_DIRECTORY, filesystem::EntryType::DIRECTORY)?;
         let mut playlists: Vec<Vec<String>> = Vec::new();
+
+        let playlist_names_length: usize = playlist_names.len();
 
         for playlist_name in &playlist_names {
             playlists.push(filesystem::get_entries(&Self::get_playlist_path(&playlist_name), filesystem::EntryType::FILE)?);
@@ -74,6 +78,8 @@ impl RsPlayer {
             main_menu: Menu::new(),
             sub_menu: Menu::new(),
             selected_menu: 0,
+            
+            sub_menu_selections: vec![0; playlist_names_length],
 
             audio_handler: AudioHandler::new(),
 
@@ -85,6 +91,16 @@ impl RsPlayer {
         EventHandler::resize(&mut rs_player)?;
 
         return Result::Ok(rs_player);
+    }
+
+    pub fn change_sub_menu(&mut self, new_sub_menu: usize) {
+        // set old selection to sub_menu_selections to save
+        self.sub_menu_selections[self.main_menu.selected] = self.sub_menu.selected;
+        // set sub_menu.selection to saved value
+        self.sub_menu.selected = self.sub_menu_selections[new_sub_menu];
+
+        self.main_menu.select_at(new_sub_menu);
+        self.redraw = true;
     }
 
     pub fn draw(&mut self) -> Result<()> {
