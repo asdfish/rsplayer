@@ -1,12 +1,13 @@
 mod audio_handler;
 mod bind_callback;
 mod config;
-mod filesystem;
 mod event_handler;
+mod filesystem;
 mod macros;
 mod menu;
-mod wrappers;
 mod rs_player;
+mod switch_song_callback;
+mod wrappers;
 
 use {
     event_handler::EventHandler,

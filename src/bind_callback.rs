@@ -3,7 +3,7 @@ use crate::{
     rs_player::RsPlayer,
 };
 
-pub trait Callback {
+pub trait BindingCallback {
     fn callback(&self, rs_player: &mut RsPlayer);
 }
 
@@ -16,7 +16,7 @@ pub struct MoveCursor {
     pub direction: CursorDirection,
     pub step: isize,
 }
-impl Callback for MoveCursor {
+impl BindingCallback for MoveCursor {
     fn callback(&self, rs_player: &mut RsPlayer) {
         let menus: [&mut Menu; 2] = [&mut rs_player.main_menu, &mut rs_player.sub_menu];
 
@@ -41,7 +41,7 @@ impl Callback for MoveCursor {
 }
 
 pub struct Select {}
-impl Callback for Select {
+impl BindingCallback for Select {
     fn callback(&self, rs_player: &mut RsPlayer) {
         match rs_player.selected_menu {
             0 => {
@@ -49,11 +49,6 @@ impl Callback for Select {
             },
             1 => {
                 rs_player.switch_song_to(rs_player.sub_menu.cursor);
-                //rs_player.sub_menu.select();
-                //rs_player.audio_handler.play(RsPlayer::get_playlist_song_path(
-                //        &rs_player.playlist_names[rs_player.main_menu.selected],
-                //        &rs_player.playlists[rs_player.main_menu.selected][rs_player.sub_menu.selected],
-                //));
             },
             _ => unreachable!(),
         }
@@ -63,7 +58,7 @@ impl Callback for Select {
 }
 
 pub struct Quit {}
-impl Callback for Quit {
+impl BindingCallback for Quit {
     fn callback(&self, rs_player: &mut RsPlayer) {
         rs_player.running = false;
     }

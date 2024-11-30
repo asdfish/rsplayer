@@ -1,6 +1,6 @@
 use {
     crate::{
-        bind_callback::Callback,
+        bind_callback::BindingCallback,
         cast,
         rs_player::RsPlayer,
     },
@@ -13,7 +13,7 @@ use {
 
 pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
-    pub callback: Box<dyn Callback>,
+    pub callback: Box<dyn BindingCallback>,
 }
 
 pub struct KeyEventHandler {
