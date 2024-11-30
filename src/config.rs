@@ -134,8 +134,10 @@ pub fn init_key_bindings() -> Vec<Binding> {
 pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
     return vec![
         status_bar::ModuleHandler::new(Duration::from_secs(1), Box::new(
-            status_bar::PlayPosition::new(
-                String::from("%T"),
+            status_bar::PlayDuration::new(
+                |duration: Duration| {
+                    return String::from("asdf")
+                }
             ),
         )),
     ];

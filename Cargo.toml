@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = { version = "0.4.38", optional = true }
 crossterm = "0.28.1"
 fastrand = { version = "2.2.0", features = [ "std" ] }
 rodio = "0.20.1"
@@ -13,5 +12,4 @@ rodio = "0.20.1"
 signal-hook = "0.3.17"
 
 [features]
-default = [ "play_position_module" ]
-play_position_module = [ "dep:chrono" ]
+default = [ "play_duration_module" ]

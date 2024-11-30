@@ -2,6 +2,7 @@ use {
     std::{
         io::BufReader,
         fs::File,
+        time::Duration,
     },
     rodio::{
         Decoder,
@@ -37,6 +38,9 @@ impl AudioHandler {
 
         self.sink.append(source);
         self.sink.play();
+    }
+    pub fn play_duration(&self) -> Duration {
+        return self.sink.get_pos();
     }
 
     pub fn is_playing(&self) -> bool {

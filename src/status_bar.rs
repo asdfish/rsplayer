@@ -16,11 +16,6 @@ use {
         },
     },
 };
-#[cfg(feature = "play_position_module")]
-use chrono::{
-    DateTime,
-    Local,
-};
 
 pub struct StatusBar {
     module_handlers: Vec<ModuleHandler>,
@@ -75,6 +70,7 @@ impl ModuleHandler {
         let now: Instant = Instant::now();
 
         if now.duration_since(self.last_update) > self.update_interval {
+            self.last_update = now;
             self.update_force(menu_handler);
         }
     }
@@ -87,23 +83,24 @@ pub trait StatusBarModule {
     fn output(&self, menu_handler: &MenuHandler) -> String;
 }
 
-#[cfg(feature = "play_position_module")]
-pub struct PlayPosition {
-    format: String,
+#[cfg(feature = "play_duration_module")]
+pub struct PlayDuration {
+    format: fn(Duration) -> String,
 }
-impl PlayPosition {
-    pub fn new(format: String) -> PlayPosition {
-        return PlayPosition {
-            format: format,
+impl PlayDuration {
+    pub fn new(format: fn(Duration) -> String) -> PlayDuration {
+        return PlayDuration {
+            format: format, // format! does not work on strings
         };
     }
 }
-#[cfg(feature = "play_position_module")]
-#[allow(unused_variables)]
-impl StatusBarModule for PlayPosition {
-    fn output(&self, menu_handler: &MenuHandler) -> String {
-        let now: DateTime<Local> = Local::now();
 
-        return now.format(&self.format).to_string();
+#[cfg(feature = "play_duration_module")]
+#[allow(unused_variables)]
+impl StatusBarModule for PlayDuration {
+    fn output(&self, menu_handler: &MenuHandler) -> String {
+        let play_duration: Duration = menu_handler.audio_handler.play_duration();
+
+        return (self.format)(play_duration);
     }
 }
