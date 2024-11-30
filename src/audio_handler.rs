@@ -1,25 +1,28 @@
 use {
     std::{
         io::BufReader,
-        fs::File
+        fs::File,
+        time::Duration,
     },
     rodio::{
         Decoder,
         OutputStream,
         Sink,
-    }
+    },
 };
 
 pub struct AudioHandler {
+    stream: OutputStream, // must be kept alive
     sink: Sink,
 }
 
 impl AudioHandler {
     pub fn new() -> AudioHandler {
-        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+        let (stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
 
         return AudioHandler {
+            stream: stream,
             sink: sink,
         };
     }
