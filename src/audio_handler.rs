@@ -28,7 +28,7 @@ impl AudioHandler {
         let file: BufReader<File> = BufReader::new(File::open(path).unwrap());
         let source = Decoder::new(file).unwrap();
 
-        if !self.sink.empty() {
+        if self.is_playing() {
             self.sink.clear();
         }
 

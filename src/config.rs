@@ -1,10 +1,16 @@
 use {
     crate::{
         bind_callback,
-        event_handler,
+        event_handler::{
+            keys::Binding
+        },
     },
     crossterm::{
-        event,
+        event::{
+            KeyEvent,
+            KeyCode,
+            KeyModifiers,
+        },
         style,
     },
     std::boxed::Box,
@@ -23,71 +29,84 @@ pub const SELECTED_BACKGROUND_REVERSED: style::Color = style::Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-pub fn init_key_bindings() -> Vec<event_handler::keys::Binding> {
+pub fn init_key_bindings() -> Vec<Binding> {
     return vec![
-        event_handler::keys::Binding {
+        // quit
+        Binding {
             key_events: vec![
-                event::KeyEvent::new(
-                    event::KeyCode::Char('q'),
-                    event::KeyModifiers::NONE
-                ),
+                KeyEvent::new( KeyCode::Char('q'), KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::Quit {}),
         },
-        event_handler::keys::Binding {
+        // cursor movement
+        Binding {
             key_events: vec![
-                event::KeyEvent::new(
-                    event::KeyCode::Char('h'),
-                    event::KeyModifiers::NONE
-                ),
+                KeyEvent::new( KeyCode::Char('h'), KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::MoveCursor {
                 direction: bind_callback::CursorDirection::X,
                 step: -1,
             }),
         },
-        event_handler::keys::Binding {
+        Binding {
             key_events: vec![
-                event::KeyEvent::new(
-                    event::KeyCode::Char('j'),
-                    event::KeyModifiers::NONE
-                ),
+                KeyEvent::new( KeyCode::Char('j'), KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::MoveCursor {
                 direction: bind_callback::CursorDirection::Y,
                 step: 1,
             }),
         },
-        event_handler::keys::Binding {
+        Binding {
             key_events: vec![
-                event::KeyEvent::new(
-                    event::KeyCode::Char('k'),
-                    event::KeyModifiers::NONE
-                ),
+                KeyEvent::new( KeyCode::Char('k'), KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::MoveCursor {
                 direction: bind_callback::CursorDirection::Y,
                 step: -1,
             }),
         },
-        event_handler::keys::Binding {
+        Binding {
             key_events: vec![
-                event::KeyEvent::new(
-                    event::KeyCode::Char('l'),
-                    event::KeyModifiers::NONE
-                ),
+                KeyEvent::new( KeyCode::Char('l'), KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::MoveCursor {
                 direction: bind_callback::CursorDirection::X,
                 step: 1,
             }),
         },
-        event_handler::keys::Binding {
+        Binding {
             key_events: vec![
-                event::KeyEvent::new(
-                    event::KeyCode::Enter,
-                    event::KeyModifiers::NONE
-                ),
+                KeyEvent::new( KeyCode::Char('G'), KeyModifiers::SHIFT ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::BOTTOM,
+                step: 0,
+            }),
+        },
+        Binding {
+            key_events: vec![
+                KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
+                KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::TOP,
+                step: 0,
+            }),
+        },
+        Binding {
+            key_events: vec![
+                KeyEvent::new( KeyCode::Char('r'), KeyModifiers::NONE ),
+            ],
+            callback: Box::new(bind_callback::MoveCursor {
+                direction: bind_callback::CursorDirection::SELECTED,
+                step: 0,
+            }),
+        },
+        // interaction
+        Binding {
+            key_events: vec![
+                KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
             ],
             callback: Box::new(bind_callback::Select {}),
         },

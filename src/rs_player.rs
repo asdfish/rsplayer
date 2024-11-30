@@ -177,6 +177,18 @@ impl RsPlayer {
         return Result::Ok(());
     }
 
+    pub fn switch_song_to(&mut self, song: usize) {
+        self.sub_menu.selected = if song > self.playlists[self.main_menu.selected].len() {
+            self.playlists[self.main_menu.selected].len()
+        } else {
+            song
+        };
+
+        self.audio_handler.play(RsPlayer::get_playlist_song_path(
+                &self.playlist_names[self.main_menu.selected],
+                &self.playlists[self.main_menu.selected][self.sub_menu.selected]));
+    }
+
     pub fn get_playlist_path(playlist_name: &str) -> String {
         return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
     }
