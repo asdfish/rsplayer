@@ -1,10 +1,10 @@
 use {
     crate::{
-        audio_handler::AudioHandler,
         config,
-        event_handler::EventHandler,
         filesystem,
         menu::Menu,
+        audio_handler::AudioHandler,
+        event_handler::EventHandler,
     },
     crossterm::{
         cursor,
@@ -12,10 +12,8 @@ use {
         terminal,
     },
     std::{
-        boxed::Box,
         io::{
             stdout,
-            Write,
             Result,
         },
         panic,
@@ -33,7 +31,7 @@ use {
     },
 };
 
-pub struct RsPlayer {
+pub struct MenuHandler {
     pub playlist_names: Vec<String>,
     pub playlists: Vec<Vec<String>>,
 
@@ -51,8 +49,8 @@ pub struct RsPlayer {
     pub switch_song_callback: usize,
 }
 
-impl RsPlayer {
-    pub fn new() -> Result<RsPlayer> {
+impl MenuHandler {
+    pub fn new() -> Result<MenuHandler> {
         Self::init()?;
 
         let playlist_names: Vec<String> = filesystem::get_entries(config::PLAYLISTS_DIRECTORY, filesystem::EntryType::DIRECTORY)?;
@@ -73,7 +71,7 @@ impl RsPlayer {
             panic!("No playlists were found");
         }
 
-        let mut rs_player: RsPlayer = RsPlayer {
+        let mut rs_player: MenuHandler = MenuHandler {
             playlist_names: playlist_names,
             playlists: playlists,
 
@@ -125,9 +123,6 @@ impl RsPlayer {
 
         self.main_menu.draw(&self.playlist_names)?;
         self.sub_menu.draw(&self.playlists[self.main_menu.selected])?;
-
-        stdout()
-            .flush()?;
 
         self.redraw = false;
         return Result::Ok(());
@@ -192,7 +187,7 @@ impl RsPlayer {
             song
         };
 
-        self.audio_handler.play(RsPlayer::get_playlist_song_path(
+        self.audio_handler.play(MenuHandler::get_playlist_song_path(
                 &self.playlist_names[self.main_menu.selected],
                 &self.playlists[self.main_menu.selected][self.sub_menu.selected]));
     }

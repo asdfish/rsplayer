@@ -5,12 +5,12 @@ use std::io::{
 
 use crossterm::{
     cursor,
-    ExecutableCommand,
+    QueueableCommand,
 };
 
 pub fn move_to(x: u16, y: u16) -> Result<()> {
     io::stdout()
-        .execute(cursor::MoveTo(x, y))?;
+        .queue(cursor::MoveTo(x, y))?;
 
     return Ok(());
 }

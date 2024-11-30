@@ -1,10 +1,13 @@
-use crate::cast;
-use crate::config;
-use crate::wrappers;
+use {
+    crate::{
+        cast,
+        config,
+        wrappers,
+    },
 
-use std::io::Result;
+    std::io::Result,
+};
 
-#[derive(Debug)]
 pub struct Menu {
     pub x: usize,
     pub y: usize,
@@ -20,7 +23,6 @@ pub struct Menu {
 }
 
 impl Menu {
-
     pub fn new() -> Menu {
         return Menu {
             x: 0, y: 0, width: 0, height: 0,

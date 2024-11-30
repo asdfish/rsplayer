@@ -5,28 +5,42 @@ mod event_handler;
 mod filesystem;
 mod macros;
 mod menu;
-mod rs_player;
+mod menu_handler;
+mod status_bar;
 mod switch_song_callback;
 mod wrappers;
 
 use {
     event_handler::EventHandler,
-    rs_player::RsPlayer,
+    menu_handler::MenuHandler,
+    status_bar::StatusBar,
+
+    std::io::{
+        stdout,
+        Write,
+    },
 };
 
 fn main() {
-    let mut rs_player: RsPlayer = RsPlayer::new().unwrap();
+    let mut status_bar: StatusBar = StatusBar::new();
+    let mut menu_handler: MenuHandler = MenuHandler::new().unwrap();
     let mut event_handler: EventHandler = EventHandler::new();
 
-    rs_player.switch_song_to(0);
-    while rs_player.running {
-        let _ = rs_player.draw();
-        let _ = event_handler.update(&mut rs_player);
+    menu_handler.switch_song_to(0);
+    while menu_handler.running {
+        let _ = menu_handler.draw();
+        let _ = status_bar.draw();
 
-        if !rs_player.audio_handler.is_playing() {
-            rs_player.switch_song();
+        stdout()
+            .flush().unwrap();
+
+        let _ = status_bar.update(&mut menu_handler);
+        let _ = event_handler.update(&mut menu_handler);
+
+        if !menu_handler.audio_handler.is_playing() {
+            menu_handler.switch_song();
         }
     }
 
-    RsPlayer::uninit();
+    MenuHandler::uninit();
 }
