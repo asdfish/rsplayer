@@ -22,7 +22,7 @@ use {
     std::time::Duration,
 };
 
-pub const PLAYLISTS_DIRECTORY: &str = "C:\\Users\\andre\\Music";
+pub const PLAYLISTS_DIRECTORY: &str = "/path/to/your/music";
 
 pub const NORMAL_FOREGROUND: Color = Color::White;
 pub const NORMAL_FOREGROUND_REVERSED: Color = Color::Black;
