@@ -33,8 +33,8 @@ fn main() {
     event_handler.resize(&mut menu_handler).unwrap();
     menu_handler.switch_song_to(0);
     while menu_handler.running {
-        let _ = menu_handler.draw();
         let _ = status_bar.draw(&event_handler);
+        let _ = menu_handler.draw();
 
         stdout()
             .flush().unwrap();

@@ -36,14 +36,23 @@ impl StatusBar {
     pub fn draw(&self, event_handler: &EventHandler) -> Result<()> {
         wrappers::cursor::move_to(0, 0)?;
         for module_handler in &self.module_handlers {
+            let (x, _) = crossterm::cursor::position()?;
+            let x: usize = cast!(x);
+            if x + module_handler.print_string.len() >= cast!(event_handler.width) {
+                let bounds: usize = (((event_handler.width - 1) as usize) - x).into();
+                module_handler.draw_bounded(bounds)?;
+                break;
+            }
             module_handler.draw()?;
         }
 
-        let (x, _) = crossterm::cursor::position()?;
-        let undrawn: u16 = event_handler.width - x;
-        wrappers::style::set_background_borrow(&config::STATUS_BAR_BACKGROUND)?;
+        let (x, y) = crossterm::cursor::position()?;
+        if y == 0 {
+            let undrawn: u16 = event_handler.width - x;
+            wrappers::style::set_background_borrow(&config::STATUS_BAR_BACKGROUND)?;
+            wrappers::print::empty_text(cast!(undrawn))?;
+        }
 
-        wrappers::print::empty_text(cast!(undrawn))?;
 
         return Result::Ok(());
     }
@@ -89,6 +98,13 @@ impl ModuleHandler {
     pub fn draw(&self) -> Result<()> {
         wrappers::style::set_color(self.foreground, self.background)?;
         wrappers::print::text_borrow(&self.print_string)?;
+
+        return Result::Ok(());
+    }
+
+    pub fn draw_bounded(&self, bounds: usize) -> Result<()> {
+        wrappers::style::set_color(self.foreground, self.background)?;
+        wrappers::print::bounded_text(bounds, &self.print_string)?;
 
         return Result::Ok(());
     }

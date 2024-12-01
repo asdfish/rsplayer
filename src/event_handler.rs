@@ -45,6 +45,11 @@ impl EventHandler {
 
         self.width = width;
         self.height = height;
+
+        if self.width == 0 || self.height == 0 {
+            panic!("Terminal size is 0");
+        }
+
         menu_handler.redraw = true;
         return Result::Ok(());
     }
