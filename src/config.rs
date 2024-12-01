@@ -1,12 +1,8 @@
 use {
     crate::{
-        bind_callback,
         event_handler::keys::Binding,
+        menu::Menu,
         menu_handler::MenuHandler,
-        switch_song_callback::{
-            self,
-            SwitchSongCallback,
-        },
         status_bar,
     },
     crossterm::{
@@ -17,11 +13,10 @@ use {
         },
         style::Color,
     },
-    std::{
-        boxed::Box,
-        time::Duration,
-    },
+    std::time::Duration,
 };
+
+pub type Callback = fn(menu_handler: &mut MenuHandler);
 
 pub const PLAYLISTS_DIRECTORY: &str = "/home/andre/files/music";
 
@@ -36,10 +31,24 @@ pub const SELECTED_BACKGROUND_REVERSED: Color = Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
-    switch_song_callback::callback_random,
-    switch_song_callback::callback_next,
-    switch_song_callback::callback_loop,
+pub const SWITCH_SONG_CALLBACKS: [Callback; 3] = [
+    |menu_handler: &mut MenuHandler| {
+        let next_song: usize = fastrand::usize(0..menu_handler.get_current_playlist().len());
+
+        menu_handler.switch_song_to(next_song);
+    },
+    |menu_handler: &mut MenuHandler| {
+        let next_song: usize = if menu_handler.sub_menu.selected + 1 > menu_handler.get_current_playlist().len() {
+            0
+        } else {
+            menu_handler.sub_menu.selected + 1
+        };
+
+        menu_handler.switch_song_to(next_song);
+    },
+    |menu_handler: &mut MenuHandler| {
+        menu_handler.switch_song_to(menu_handler.sub_menu.selected);
+    },
 ];
 
 pub fn init_key_bindings() -> Vec<Binding> {
@@ -47,87 +56,106 @@ pub fn init_key_bindings() -> Vec<Binding> {
         // quit
         Binding::new(
             vec![
-                KeyEvent::new( KeyCode::Char('q'), KeyModifiers::NONE ),
+              KeyEvent::new( KeyCode::Char('q'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::Quit {}),
+            |menu_handler: &mut MenuHandler| {
+                menu_handler.running = false;
+            },
         ),
         // cursor movement
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('h'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::X,
-                step: -1,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::X, -1, menu_handler);
+            },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('j'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::Y,
-                step: 1,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::Y, 1, menu_handler);
+            },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('k'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::Y,
-                step: -1,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::Y, -1, menu_handler);
+            },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('l'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::X,
-                step: 1,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::X, 1, menu_handler);
+            },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('G'), KeyModifiers::SHIFT ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::BOTTOM,
-                step: 0,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::BOTTOM, 0, menu_handler);
+            },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
                 KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::TOP,
-                step: 0,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::TOP, 0, menu_handler);
+            },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('r'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::MoveCursor {
-                direction: bind_callback::CursorDirection::SELECTED,
-                step: 0,
-            }),
+            |menu_handler: &mut MenuHandler| {
+                move_cursor(CursorDirection::SELECTED, 0, menu_handler);
+            },
         ),
         // interaction
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::Select {}),
+            |menu_handler: &mut MenuHandler| {
+                match menu_handler.selected_menu {
+                    0 => {
+                        menu_handler.change_sub_menu(menu_handler.main_menu.cursor);
+                    },
+                    1 => {
+                        menu_handler.switch_song_to(menu_handler.sub_menu.cursor);
+                    },
+                    _ => unreachable!(),
+                }
+
+                menu_handler.redraw = true;
+            }
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('s'), KeyModifiers::NONE ),
             ],
-            Box::new(bind_callback::SwitchSong {}),
+            |menu_handler: &mut MenuHandler| {
+                match menu_handler.selected_menu {
+                    0 => {
+                        menu_handler.change_sub_menu(menu_handler.main_menu.cursor);
+                    },
+                    1 => {
+                        menu_handler.switch_song_to(menu_handler.sub_menu.cursor);
+                    },
+                    _ => unreachable!(),
+                }
+
+                menu_handler.redraw = true;
+            }
         ),
     ];
 }
@@ -136,7 +164,7 @@ pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
     return vec![
         status_bar::ModuleHandler::new(Color::White, Color::Black, Duration::from_secs(1), Box::new(
             status_bar::PlayDuration::new(
-                move |duration: Duration, menu_handler: &MenuHandler| {
+                |duration: Duration, menu_handler: &MenuHandler| {
                     const PLAY_PHASES: [&str; 10] = [
                         "[=         ]",
                         "[==        ]",
@@ -160,10 +188,10 @@ pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
                         if current_source_duration != 0 {
                             (current_duration / current_source_duration) as f32
                         } else {
-                            0.
+                            0.0
                         }
                     } else {
-                        0.
+                        0.0
                     };
 
                     let play_percentage: usize = if PLAY_PHASES.len() == 0 { 0 } else {
@@ -195,4 +223,32 @@ pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
             ),
         )),
     ];
+}
+
+// local
+pub enum CursorDirection {
+    X, Y,
+    TOP, BOTTOM,
+    SELECTED,
+}
+fn move_cursor(cursor_direction: CursorDirection, step: isize, menu_handler: &mut MenuHandler) {
+    let menus: [&mut Menu; 2] = [&mut menu_handler.main_menu, &mut menu_handler.sub_menu];
+
+    match cursor_direction {
+        CursorDirection::X => {
+            if step > 0 {
+                menu_handler.selected_menu = 1;
+            } else if step < 0 {
+                menu_handler.selected_menu = 0;
+            }
+        },
+        CursorDirection::Y => menus[menu_handler.selected_menu].move_cursor(step),
+
+        CursorDirection::TOP => menus[menu_handler.selected_menu].cursor = 0,
+        CursorDirection::BOTTOM => menus[menu_handler.selected_menu].cursor = usize::MAX,
+
+        CursorDirection::SELECTED => menus[menu_handler.selected_menu].cursor = menus[menu_handler.selected_menu].selected,
+    }
+
+    menu_handler.redraw = true;
 }

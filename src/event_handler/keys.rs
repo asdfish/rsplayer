@@ -1,22 +1,19 @@
 use {
     crate::{
-        bind_callback::BindingCallback,
+        config::Callback,
         cast,
         menu_handler::MenuHandler,
     },
     crossterm::event,
-    std::{
-        boxed::Box,
-        io::Result,
-    },
+    std::io::Result,
 };
 
 pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
-    pub callback: Box<dyn BindingCallback>,
+    pub callback: Callback,
 }
 impl Binding {
-    pub fn new(key_events: Vec<event::KeyEvent>, callback: Box<dyn BindingCallback>) -> Binding {
+    pub fn new(key_events: Vec<event::KeyEvent>, callback: Callback) -> Binding {
         return Binding {
             key_events: key_events,
             callback: callback,
@@ -67,7 +64,7 @@ impl KeyEventHandler {
         if same_event_id != -1 {
             self.key_events.clear();
             let same_event_id: usize = cast!(same_event_id);
-            self.key_bindings[same_event_id].callback.callback(rs_player);
+            (self.key_bindings[same_event_id].callback)(rs_player);
         }
 
         return Result::Ok(());

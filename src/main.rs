@@ -1,5 +1,4 @@
 mod audio_handler;
-mod bind_callback;
 mod config;
 mod event_handler;
 mod filesystem;
@@ -7,7 +6,6 @@ mod macros;
 mod menu;
 mod menu_handler;
 mod status_bar;
-mod switch_song_callback;
 mod wrappers;
 
 use {
