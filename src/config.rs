@@ -112,6 +112,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
                 move_cursor(CursorDirection::TOP, 0, menu_handler);
             },
         ),
+        // return to selected item
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('r'), KeyModifiers::NONE ),
@@ -120,25 +121,16 @@ pub fn init_key_bindings() -> Vec<Binding> {
                 move_cursor(CursorDirection::SELECTED, 0, menu_handler);
             },
         ),
-        // interaction
+        // switch song
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
             ],
             |menu_handler: &mut MenuHandler| {
-                match menu_handler.selected_menu {
-                    0 => {
-                        menu_handler.change_sub_menu(menu_handler.main_menu.cursor);
-                    },
-                    1 => {
-                        menu_handler.switch_song_to(menu_handler.sub_menu.cursor);
-                    },
-                    _ => unreachable!(),
-                }
-
-                menu_handler.redraw = true;
+                menu_handler.switch_song();
             }
         ),
+        // select menu
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('s'), KeyModifiers::NONE ),
