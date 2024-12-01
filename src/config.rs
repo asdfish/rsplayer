@@ -167,16 +167,16 @@ pub fn init_key_bindings() -> Vec<Binding> {
         // switch song
         Binding::new(
             vec![
-                KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
+                KeyEvent::new( KeyCode::Char('s'), KeyModifiers::NONE ),
             ],
             |menu_handler: &mut MenuHandler, _| { menu_handler.switch_song(); }
         ),
         // select menu
         Binding::new(
             vec![
-                KeyEvent::new( KeyCode::Char('s'), KeyModifiers::NONE ),
+                KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
             ],
-            |menu_handler: &mut MenuHandler, _| {
+            |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
                 match menu_handler.selected_menu {
                     0 => {
                         menu_handler.change_sub_menu(menu_handler.main_menu.cursor);
@@ -187,6 +187,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
                     _ => unreachable!(),
                 }
 
+                status_bar.force_update = true;
                 menu_handler.redraw = true;
             }
         ),
@@ -212,7 +213,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
     ];
 }
 
-pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 4];
+pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 9];
 fn separator_callback(_: &MenuHandler) -> String {
     return String::from(" | ");
 }
@@ -288,4 +289,16 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
         |menu_handler: &MenuHandler| {
             return SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string();
         }),
+    // current playlist
+    separator(),
+    status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
+        |menu_handler: &MenuHandler| {
+            return menu_handler.playlist_names[menu_handler.main_menu.selected].clone();
+        }),
+    separator(),
+    status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
+        |menu_handler: &MenuHandler| {
+            return menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected].clone();
+        }),
+    separator(),
 ];
