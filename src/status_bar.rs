@@ -1,14 +1,15 @@
 use {
     crate::{
+        cast,
         config,
-        wrappers::{
-            cursor,
-            print,
-            style,
-        },
+        wrappers,
+        event_handler::EventHandler,
         menu_handler::MenuHandler,
     },
-    crossterm::style::Color,
+    crossterm::{
+        self,
+        style::Color,
+    },
     std::{
         io::Result,
         time::{
@@ -21,7 +22,7 @@ use {
 pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
 
 pub struct StatusBar {
-    force_update: bool,
+    pub force_update: bool,
     module_handlers: config::StatusBarModuleHandlersType,
 }
 impl StatusBar {
@@ -32,11 +33,17 @@ impl StatusBar {
         };
     }
 
-    pub fn draw(&self) -> Result<()> {
-        cursor::move_to(0, 0)?;
+    pub fn draw(&self, event_handler: &EventHandler) -> Result<()> {
+        wrappers::cursor::move_to(0, 0)?;
         for module_handler in &self.module_handlers {
             module_handler.draw()?;
         }
+
+        let (x, _) = crossterm::cursor::position()?;
+        let undrawn: u16 = event_handler.width - x;
+        wrappers::style::set_background_borrow(&config::STATUS_BAR_BACKGROUND)?;
+
+        wrappers::print::empty_text(cast!(undrawn))?;
 
         return Result::Ok(());
     }
@@ -80,8 +87,8 @@ impl ModuleHandler {
     }
 
     pub fn draw(&self) -> Result<()> {
-        style::set_color(self.foreground, self.background)?;
-        print::text_borrow(&self.print_string)?;
+        wrappers::style::set_color(self.foreground, self.background)?;
+        wrappers::print::text_borrow(&self.print_string)?;
 
         return Result::Ok(());
     }

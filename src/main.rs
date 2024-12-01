@@ -24,16 +24,17 @@ fn main() {
     let mut status_bar: StatusBar = StatusBar::new();
     let mut event_handler: EventHandler = EventHandler::new();
 
+    event_handler.resize(&mut menu_handler).unwrap();
     menu_handler.switch_song_to(0);
     while menu_handler.running {
         let _ = menu_handler.draw();
-        let _ = status_bar.draw();
+        let _ = status_bar.draw(&event_handler);
 
         stdout()
             .flush().unwrap();
 
         let _ = status_bar.update(&mut menu_handler);
-        let _ = event_handler.update(&mut menu_handler);
+        let _ = event_handler.update(&mut menu_handler, &mut status_bar);
 
         if !menu_handler.audio_handler.is_playing() {
             menu_handler.switch_song();

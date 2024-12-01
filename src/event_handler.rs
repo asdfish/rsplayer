@@ -4,6 +4,7 @@ use {
         cast,
         menu::Menu,
         menu_handler::MenuHandler,
+        status_bar::StatusBar,
     },
     crossterm::{
         event,
@@ -18,26 +19,32 @@ use {
 pub mod keys;
 
 pub struct EventHandler {
+    pub width: u16,
+    pub height: u16,
     key_event_handler: keys::KeyEventHandler,
 }
 
 impl EventHandler {
     pub fn new() -> EventHandler {
         return EventHandler {
+            width: 0,
+            height: 0,
             key_event_handler: keys::KeyEventHandler::new(config::init_key_bindings()),
         }
     }
 
-    pub fn resize(menu_handler: &mut MenuHandler) -> Result<()> {
+    pub fn resize(&mut self, menu_handler: &mut MenuHandler) -> Result<()> {
         let (width, height) = terminal::size()?;
 
-        return Self::resize_to(menu_handler, width, height);
+        return self.resize_to(menu_handler, width, height);
     }
 
-    pub fn resize_to(menu_handler: &mut MenuHandler, width: u16, height: u16) -> Result<()> {
+    pub fn resize_to(&mut self, menu_handler: &mut MenuHandler, width: u16, height: u16) -> Result<()> {
         Self::resize_main_menu(&mut menu_handler.main_menu, width, height);
         Self::resize_sub_menu(&mut menu_handler.sub_menu, width, height);
 
+        self.width = width;
+        self.height = height;
         menu_handler.redraw = true;
         return Result::Ok(());
     }
@@ -78,16 +85,16 @@ impl EventHandler {
         }
     }
 
-    pub fn update(&mut self, menu_handler: &mut MenuHandler) -> Result<()> {
+    pub fn update(&mut self, menu_handler: &mut MenuHandler, status_bar: &mut StatusBar) -> Result<()> {
         if event::poll(Duration::from_millis(config::FRAME_RATE_MS))? {
             let event: event::Event = event::read()?;
 
             match event {
                 event::Event::Key(key_event) => {
-                    self.key_event_handler.update(key_event, menu_handler)?;
+                    self.key_event_handler.update(key_event, menu_handler, status_bar)?;
                 },
                 event::Event::Resize(_, _) => {
-                    Self::resize(menu_handler)?;
+                    self.resize(menu_handler)?;
                 }
                 _ => {},
             }

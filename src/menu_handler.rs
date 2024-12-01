@@ -4,7 +4,6 @@ use {
         filesystem,
         menu::Menu,
         audio_handler::AudioHandler,
-        event_handler::EventHandler,
     },
     crossterm::{
         cursor,
@@ -73,7 +72,7 @@ impl MenuHandler {
             panic!("No playlists were found");
         }
 
-        let mut rs_player: MenuHandler = MenuHandler {
+        let mut menu_handler: MenuHandler = MenuHandler {
             playlist_names: playlist_names,
             playlists: playlists,
 
@@ -90,11 +89,9 @@ impl MenuHandler {
 
             switch_song_callback: 0,
         };
-        rs_player.sub_menu.reverse_colors = false;
+        menu_handler.sub_menu.reverse_colors = false;
 
-        EventHandler::resize(&mut rs_player)?;
-
-        return Result::Ok(rs_player);
+        return Result::Ok(menu_handler);
     }
 
     pub fn change_sub_menu(&mut self, new_sub_menu: usize) {
