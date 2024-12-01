@@ -2,7 +2,10 @@ use {
     crate::{
         event_handler::keys::Binding,
         menu::Menu,
-        menu_handler::MenuHandler,
+        menu_handler::{
+            MenuHandler,
+            SwitchSongCallback,
+        },
         status_bar,
     },
     crossterm::{
@@ -15,8 +18,6 @@ use {
     },
     std::time::Duration,
 };
-
-pub type Callback = fn(menu_handler: &mut MenuHandler);
 
 pub const PLAYLISTS_DIRECTORY: &str = "/home/andre/files/music";
 
@@ -31,7 +32,7 @@ pub const SELECTED_BACKGROUND_REVERSED: Color = Color::White;
 
 pub const FRAME_RATE_MS: u64 = 1000 / 24;
 
-pub const SWITCH_SONG_CALLBACKS: [Callback; 3] = [
+pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
     |menu_handler: &mut MenuHandler| {
         let next_song: usize = fastrand::usize(0..menu_handler.get_current_playlist().len());
 

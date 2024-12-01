@@ -1,6 +1,5 @@
 use {
     crate::{
-        config::Callback,
         cast,
         menu_handler::MenuHandler,
     },
@@ -8,18 +7,20 @@ use {
     std::io::Result,
 };
 
+
 pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
-    pub callback: Callback,
+    pub callback: BindingCallback,
 }
 impl Binding {
-    pub fn new(key_events: Vec<event::KeyEvent>, callback: Callback) -> Binding {
+    pub fn new(key_events: Vec<event::KeyEvent>, callback: BindingCallback) -> Binding {
         return Binding {
             key_events: key_events,
             callback: callback,
         }
     }
 }
+pub type BindingCallback = fn(menu_handler: &mut MenuHandler);
 
 pub struct KeyEventHandler {
     pub key_bindings: Vec<Binding>,

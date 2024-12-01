@@ -31,6 +31,8 @@ use {
     },
 };
 
+pub type SwitchSongCallback = fn(menu_handler: &mut MenuHandler);
+
 pub struct MenuHandler {
     pub playlist_names: Vec<String>,
     pub playlists: Vec<Vec<String>>,

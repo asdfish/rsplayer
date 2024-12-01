@@ -98,7 +98,6 @@ pub trait StatusBarModule {
     fn output(&self, menu_handler: &MenuHandler) -> String;
 }
 
-#[cfg(feature = "play_duration_module")]
 pub struct PlayDuration {
     format: fn(Duration, menu_handler: &MenuHandler) -> String,
 }
@@ -110,8 +109,6 @@ impl PlayDuration {
     }
 }
 
-#[cfg(feature = "play_duration_module")]
-#[allow(unused_variables)]
 impl StatusBarModule for PlayDuration {
     fn output(&self, menu_handler: &MenuHandler) -> String {
         let play_duration: Duration = menu_handler.audio_handler.play_duration();
