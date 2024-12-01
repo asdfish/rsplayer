@@ -22,7 +22,7 @@ pub struct Menu {
 }
 
 impl Menu {
-    pub fn new() -> Menu {
+    pub const fn new() -> Menu {
         return Menu {
             x: 0, y: 0, width: 0, height: 0,
             camera: 0, cursor: 0,

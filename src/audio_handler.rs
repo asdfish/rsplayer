@@ -12,9 +12,8 @@ use {
     },
 };
 
-#[allow(dead_code)]
 pub struct AudioHandler {
-    stream: OutputStream, // must be kept alive
+    _stream: OutputStream, // must be kept alive
     sink: Sink,
 
     pub current_source_duration: Option<Duration>, // may be useful for config functions
@@ -26,7 +25,7 @@ impl AudioHandler {
         let sink = Sink::try_new(&stream_handle).unwrap();
 
         return AudioHandler {
-            stream: stream,
+            _stream: stream,
             sink: sink,
 
             current_source_duration: None,

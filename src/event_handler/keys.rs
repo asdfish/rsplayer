@@ -13,7 +13,7 @@ pub struct Binding {
     pub callback: BindingCallback,
 }
 impl Binding {
-    pub fn new(key_events: Vec<event::KeyEvent>, callback: BindingCallback) -> Binding {
+    pub const fn new(key_events: Vec<event::KeyEvent>, callback: BindingCallback) -> Binding {
         return Binding {
             key_events: key_events,
             callback: callback,
