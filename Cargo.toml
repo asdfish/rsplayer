@@ -5,8 +5,12 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.28.1"
-fastrand = { version = "2.2.0", features = [ "std" ] }
-rodio = "0.20.1"
+fastrand = "2.2.0"
+rodio = { version = "0.20.1", features = [ "symphonia-all" ] }
+
+[dependencies.symphonia-core]
+version = "0.5.4"
+features = [ "opt-simd-avx", "opt-simd-neon", "opt-simd-sse" ]
 
 [target.'cfg(unix)'.dependencies]
 signal-hook = "0.3.17"
