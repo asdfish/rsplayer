@@ -1,6 +1,11 @@
 [package]
 name = "rsplayer"
-version = "0.1.0"
+version = "1.0.0"
+authors = ["asdfish <lgray3420@gmail.com>"]
+description = "rust music player"
+license = "BSD-3-Clause"
+repository = "https://github.com/asdfish/rsplayer"
+readme = "README.md"
 edition = "2021"
 
 [dependencies]
@@ -17,3 +22,7 @@ winapi = "0.3.9"
 
 [target.'cfg(unix)'.dependencies]
 signal-hook = "0.3.17"
+
+[profile.release]
+strip = true
+lto = true
