@@ -15,6 +15,19 @@ use {
     },
 };
 
+#[cfg(windows)]
+use {
+    winapi::{
+        shared::minwindef::{
+            BOOL,
+            DWORD,
+            FALSE,
+            TRUE,
+        },
+        um::consoleapi::SetConsoleCtrlHandler,
+    },
+};
+
 #[cfg(unix)]
 use {
     std::thread,
@@ -36,6 +49,21 @@ fn init_hooks() {
         println!("{}", panic_info);
         process::exit(-1);
     }));
+
+    #[cfg(windows)]
+    {
+        extern "system" fn ctrl_handler(ctrl_type: DWORD) -> BOOL {
+            println!("Caught signal: {}", ctrl_type);
+            uninit();
+
+            return FALSE;
+        }
+
+        if 0 == unsafe { SetConsoleCtrlHandler(Some(ctrl_handler), TRUE) } {
+            println!("Failed to set ConsoleCtrlHandler");
+            uninit();
+        }
+    }
 
     #[cfg(unix)]
     {

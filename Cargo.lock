@@ -714,6 +714,7 @@ dependencies = [
  "rodio",
  "signal-hook",
  "symphonia-core",
+ "winapi",
 ]
 
 [[package]]

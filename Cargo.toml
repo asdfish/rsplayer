@@ -12,5 +12,8 @@ rodio = { version = "0.20.1", features = [ "symphonia-all" ] }
 version = "0.5.4"
 features = [ "opt-simd-avx", "opt-simd-neon", "opt-simd-sse" ]
 
+[target.'cfg(windows)'.dependencies]
+winapi = "0.3.9"
+
 [target.'cfg(unix)'.dependencies]
 signal-hook = "0.3.17"
