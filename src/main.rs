@@ -6,20 +6,26 @@ mod macros;
 mod menu;
 mod menu_handler;
 mod status_bar;
+mod system;
 mod wrappers;
 
 use {
     event_handler::EventHandler,
     menu_handler::MenuHandler,
     status_bar::StatusBar,
-
     std::io::{
         stdout,
         Write,
     },
+    system::{
+        init,
+        uninit,
+    },
 };
 
 fn main() {
+    init().unwrap();
+
     let mut menu_handler: MenuHandler = MenuHandler::new().unwrap();
     let mut status_bar: StatusBar = StatusBar::new();
     let mut event_handler: EventHandler = EventHandler::new();
@@ -41,5 +47,5 @@ fn main() {
         }
     }
 
-    MenuHandler::uninit();
+    uninit();
 }
