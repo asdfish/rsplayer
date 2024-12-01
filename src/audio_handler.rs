@@ -8,6 +8,7 @@ use {
         Decoder,
         OutputStream,
         Sink,
+        Source,
     },
 };
 
@@ -15,6 +16,8 @@ use {
 pub struct AudioHandler {
     stream: OutputStream, // must be kept alive
     sink: Sink,
+
+    pub current_source_duration: Option<Duration>, // may be useful for config functions
 }
 
 impl AudioHandler {
@@ -25,16 +28,20 @@ impl AudioHandler {
         return AudioHandler {
             stream: stream,
             sink: sink,
+
+            current_source_duration: None,
         };
     }
 
-    pub fn play(&self, path: String) {
+    pub fn play(&mut self, path: String) {
         let file: BufReader<File> = BufReader::new(File::open(path).unwrap());
         let source = Decoder::new(file).unwrap();
 
         if self.is_playing() {
             self.sink.clear();
         }
+
+        self.current_source_duration = source.total_duration();
 
         self.sink.append(source);
         self.sink.play();

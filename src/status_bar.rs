@@ -100,10 +100,10 @@ pub trait StatusBarModule {
 
 #[cfg(feature = "play_duration_module")]
 pub struct PlayDuration {
-    format: fn(Duration) -> String,
+    format: fn(Duration, menu_handler: &MenuHandler) -> String,
 }
 impl PlayDuration {
-    pub fn new(format: fn(Duration) -> String) -> PlayDuration {
+    pub fn new(format: fn(Duration, &MenuHandler) -> String) -> PlayDuration {
         return PlayDuration {
             format: format, // format! does not work on strings
         };
@@ -116,6 +116,6 @@ impl StatusBarModule for PlayDuration {
     fn output(&self, menu_handler: &MenuHandler) -> String {
         let play_duration: Duration = menu_handler.audio_handler.play_duration();
 
-        return (self.format)(play_duration);
+        return (self.format)(play_duration, menu_handler);
     }
 }

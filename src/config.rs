@@ -1,8 +1,8 @@
 use {
     crate::{
-        cast,
         bind_callback,
         event_handler::keys::Binding,
+        menu_handler::MenuHandler,
         switch_song_callback::{
             self,
             SwitchSongCallback,
@@ -15,10 +15,7 @@ use {
             KeyCode,
             KeyModifiers,
         },
-        style::{
-            self,
-            Color,
-        },
+        style::Color,
     },
     std::{
         boxed::Box,
@@ -139,22 +136,61 @@ pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
     return vec![
         status_bar::ModuleHandler::new(Color::White, Color::Black, Duration::from_secs(1), Box::new(
             status_bar::PlayDuration::new(
-                move |duration: Duration| {
-                    fn pad_usize(num: usize) -> String {
-                        return if num < 10 {
-                            "0".to_string() + &num.to_string()
+                move |duration: Duration, menu_handler: &MenuHandler| {
+                    const PLAY_PHASES: [&str; 10] = [
+                        "[=         ]",
+                        "[==        ]",
+                        "[===       ]",
+                        "[====      ]",
+                        "[=====     ]",
+                        "[======    ]",
+                        "[=======   ]",
+                        "[========  ]",
+                        "[========= ]",
+                        "[==========]",
+                    ];
+
+                    let current_duration: u64 = duration.as_secs();
+
+                    let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration.clone();
+                    let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
+                        let current_source_duration: Duration = current_source_duration.unwrap();
+                        let current_source_duration: u64 = current_source_duration.as_secs();
+
+                        if current_source_duration != 0 {
+                            (current_duration / current_source_duration) as f32
                         } else {
-                            num.to_string()
+                            0.
                         }
-                    }
+                    } else {
+                        0.
+                    };
 
-                    let seconds: usize = cast!(duration.as_secs());
-                    let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
+                    let play_percentage: usize = if PLAY_PHASES.len() == 0 { 0 } else {
+                        (((PLAY_PHASES.len() - 1) as f32) * play_percentage) as usize
+                    };
+                    return PLAY_PHASES[play_percentage].to_string();
 
-                    let seconds: String = pad_usize(seconds);
-                    let minutes: String = pad_usize(minutes);
+                    //use crate::cast;
+                    //let play_percentage: f32 = if menu_handler.audio_handler.current_source_duration.is_some() {
+                    //    let current_source_duration: Duration = menu_handler.audio_handler.current_source_duration.unwrap();
+                    //}
 
-                    return minutes + ":" + &seconds.to_string();
+                    //fn pad_usage(num: usize) -> String {
+                    //    return if num < 10 {
+                    //        "0".to_string() + &num.to_string()
+                    //    } else {
+                    //        num.to_string()
+                    //    }
+                    //}
+                    //
+                    //let seconds: usize = cast!(duration.as_secs());
+                    //let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
+                    //
+                    //let seconds: String = pad_usize(seconds);
+                    //let minutes: String = pad_usize(minutes);
+                    //
+                    //return minutes + ":" + &seconds.to_string();
                 }
             ),
         )),
