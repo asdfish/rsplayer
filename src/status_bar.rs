@@ -10,7 +10,6 @@ use {
     },
     crossterm::style::Color,
     std::{
-        boxed::Box,
         io::Result,
         time::{
             Duration,
@@ -19,12 +18,14 @@ use {
     },
 };
 
+pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
+
 pub struct StatusBar {
     module_handlers: Vec<ModuleHandler>,
 }
 impl StatusBar {
     pub fn new(menu_handler: &MenuHandler) -> StatusBar {
-        let mut module_handlers: Vec<ModuleHandler> = config::init_status_bar();
+        let mut module_handlers: Vec<ModuleHandler> = config::init_status_bar_module_handlers();
         for module_handler in &mut module_handlers {
             module_handler.update_force(menu_handler);
         }
@@ -55,19 +56,19 @@ pub struct ModuleHandler {
     background: Color,
 
     update_interval: Duration,
-    module: Box<dyn StatusBarModule>,
+    update_callback: ModuleCallback,
 
     pub print_string: String,
     last_update: Instant,
 }
 impl ModuleHandler {
-    pub fn new(foreground: Color, background: Color, update_interval: Duration, module: Box<dyn StatusBarModule>) -> ModuleHandler {
+    pub fn new(foreground: Color, background: Color, update_interval: Duration, update_callback: ModuleCallback) -> ModuleHandler {
         return ModuleHandler {
             foreground: foreground,
             background: background,
 
             update_interval: update_interval,
-            module: module,
+            update_callback: update_callback,
 
             print_string: String::new(),
             last_update: Instant::now(),
@@ -90,29 +91,6 @@ impl ModuleHandler {
         }
     }
     pub fn update_force(&mut self, menu_handler: &MenuHandler) {
-        self.print_string = self.module.output(menu_handler);
-    }
-}
-
-pub trait StatusBarModule {
-    fn output(&self, menu_handler: &MenuHandler) -> String;
-}
-
-pub struct PlayDuration {
-    format: fn(Duration, menu_handler: &MenuHandler) -> String,
-}
-impl PlayDuration {
-    pub fn new(format: fn(Duration, &MenuHandler) -> String) -> PlayDuration {
-        return PlayDuration {
-            format: format, // format! does not work on strings
-        };
-    }
-}
-
-impl StatusBarModule for PlayDuration {
-    fn output(&self, menu_handler: &MenuHandler) -> String {
-        let play_duration: Duration = menu_handler.audio_handler.play_duration();
-
-        return (self.format)(play_duration, menu_handler);
+        self.print_string = (self.update_callback)(menu_handler);
     }
 }

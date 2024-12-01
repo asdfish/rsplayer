@@ -152,73 +152,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
         ),
     ];
 }
-
-pub fn init_status_bar() -> Vec<status_bar::ModuleHandler> {
-    return vec![
-        status_bar::ModuleHandler::new(Color::White, Color::Black, Duration::from_secs(1), Box::new(
-            status_bar::PlayDuration::new(
-                |duration: Duration, menu_handler: &MenuHandler| {
-                    const PLAY_PHASES: [&str; 10] = [
-                        "[=         ]",
-                        "[==        ]",
-                        "[===       ]",
-                        "[====      ]",
-                        "[=====     ]",
-                        "[======    ]",
-                        "[=======   ]",
-                        "[========  ]",
-                        "[========= ]",
-                        "[==========]",
-                    ];
-
-                    let current_duration: u64 = duration.as_secs();
-
-                    let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration.clone();
-                    let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
-                        let current_source_duration: Duration = current_source_duration.unwrap();
-                        let current_source_duration: u64 = current_source_duration.as_secs();
-
-                        if current_source_duration != 0 {
-                            (current_duration / current_source_duration) as f32
-                        } else {
-                            0.0
-                        }
-                    } else {
-                        0.0
-                    };
-
-                    let play_percentage: usize = if PLAY_PHASES.len() == 0 { 0 } else {
-                        (((PLAY_PHASES.len() - 1) as f32) * play_percentage) as usize
-                    };
-                    return PLAY_PHASES[play_percentage].to_string();
-
-                    //use crate::cast;
-                    //let play_percentage: f32 = if menu_handler.audio_handler.current_source_duration.is_some() {
-                    //    let current_source_duration: Duration = menu_handler.audio_handler.current_source_duration.unwrap();
-                    //}
-
-                    //fn pad_usage(num: usize) -> String {
-                    //    return if num < 10 {
-                    //        "0".to_string() + &num.to_string()
-                    //    } else {
-                    //        num.to_string()
-                    //    }
-                    //}
-                    //
-                    //let seconds: usize = cast!(duration.as_secs());
-                    //let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
-                    //
-                    //let seconds: String = pad_usize(seconds);
-                    //let minutes: String = pad_usize(minutes);
-                    //
-                    //return minutes + ":" + &seconds.to_string();
-                }
-            ),
-        )),
-    ];
-}
-
-// local
+// bind functions
 pub enum CursorDirection {
     X, Y,
     TOP, BOTTOM,
@@ -244,4 +178,74 @@ fn move_cursor(cursor_direction: CursorDirection, step: isize, menu_handler: &mu
     }
 
     menu_handler.redraw = true;
+}
+
+pub fn init_status_bar_module_handlers() -> Vec<status_bar::ModuleHandler> {
+    return vec![
+        status_bar::ModuleHandler::new(Color::White, Color::Black, Duration::from_secs(1), 
+            |menu_handler: &MenuHandler| {
+                const PLAY_PHASES: [&str; 10] = [
+                    "[=         ]",
+                    "[==        ]",
+                    "[===       ]",
+                    "[====      ]",
+                    "[=====     ]",
+                    "[======    ]",
+                    "[=======   ]",
+                    "[========  ]",
+                    "[========= ]",
+                    "[==========]",
+                ];
+
+                let current_duration: Duration = menu_handler.audio_handler.play_duration();
+                let current_duration: u64 = current_duration.as_secs();
+
+                let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration.clone();
+                let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
+                    let current_source_duration: Duration = current_source_duration.unwrap();
+                    let current_source_duration: u64 = current_source_duration.as_secs();
+
+                    if current_source_duration != 0 {
+                        (current_duration / current_source_duration) as f32
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                };
+
+                if PLAY_PHASES.len() == 0 {
+                    return String::new();
+                }
+
+                let play_percentage: usize = (((PLAY_PHASES.len() - 1) as f32) * play_percentage) as usize;
+                return if play_percentage >= PLAY_PHASES.len() {
+                    PLAY_PHASES[PLAY_PHASES.len() - 1].to_string()
+                } else {
+                    PLAY_PHASES[play_percentage].to_string()
+                };
+
+                //use crate::cast;
+                //let play_percentage: f32 = if menu_handler.audio_handler.current_source_duration.is_some() {
+                //    let current_source_duration: Duration = menu_handler.audio_handler.current_source_duration.unwrap();
+                //}
+
+                //fn pad_usage(num: usize) -> String {
+                //    return if num < 10 {
+                //        "0".to_string() + &num.to_string()
+                //    } else {
+                //        num.to_string()
+                //    }
+                //}
+                //
+                //let seconds: usize = cast!(duration.as_secs());
+                //let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
+                //
+                //let seconds: String = pad_usize(seconds);
+                //let minutes: String = pad_usize(minutes);
+                //
+                //return minutes + ":" + &seconds.to_string();
+            }
+        ),
+    ];
 }
