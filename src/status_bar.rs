@@ -21,17 +21,14 @@ use {
 pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
 
 pub struct StatusBar {
-    module_handlers: Vec<ModuleHandler>,
+    force_update: bool,
+    module_handlers: config::StatusBarModuleHandlersType,
 }
 impl StatusBar {
-    pub fn new(menu_handler: &MenuHandler) -> StatusBar {
-        let mut module_handlers: Vec<ModuleHandler> = config::init_status_bar_module_handlers();
-        for module_handler in &mut module_handlers {
-            module_handler.update_force(menu_handler);
-        }
-
+    pub const fn new() -> StatusBar {
         return StatusBar {
-            module_handlers: module_handlers,
+            force_update: true,
+            module_handlers: config::STATUS_BAR_MODULE_HANDLERS,
         };
     }
 
@@ -45,6 +42,13 @@ impl StatusBar {
     }
 
     pub fn update(&mut self, menu_handler: &MenuHandler) {
+        if self.force_update {
+            for module_handler in &mut self.module_handlers {
+                module_handler.update_force(menu_handler);
+            }
+            return;
+        }
+
         for module_handler in &mut self.module_handlers {
             module_handler.update(menu_handler);
         }
@@ -55,14 +59,14 @@ pub struct ModuleHandler {
     foreground: Color,
     background: Color,
 
-    update_interval: Duration,
+    update_interval: Option<Duration>,
     update_callback: ModuleCallback,
 
     pub print_string: String,
-    last_update: Instant,
+    last_update: Option<Instant>,
 }
 impl ModuleHandler {
-    pub fn new(foreground: Color, background: Color, update_interval: Duration, update_callback: ModuleCallback) -> ModuleHandler {
+    pub const fn new(foreground: Color, background: Color, update_interval: Option<Duration>, update_callback: ModuleCallback) -> ModuleHandler {
         return ModuleHandler {
             foreground: foreground,
             background: background,
@@ -71,7 +75,7 @@ impl ModuleHandler {
             update_callback: update_callback,
 
             print_string: String::new(),
-            last_update: Instant::now(),
+            last_update: None,
         };
     }
 
@@ -83,10 +87,14 @@ impl ModuleHandler {
     }
 
     pub fn update(&mut self, menu_handler: &MenuHandler) {
+        if self.update_interval.is_none() {
+            return;
+        }
+
         let now: Instant = Instant::now();
 
-        if now.duration_since(self.last_update) > self.update_interval {
-            self.last_update = now;
+        if self.last_update.is_none() || now.duration_since(self.last_update.unwrap()) > self.update_interval.unwrap() {
+            self.last_update = Some(now);
             self.update_force(menu_handler);
         }
     }

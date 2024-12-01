@@ -51,8 +51,40 @@ pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
         menu_handler.switch_song_to(menu_handler.sub_menu.selected);
     },
 ];
+pub const SWITCH_SONG_CALLBACK_NAMES: [&str; SWITCH_SONG_CALLBACKS.len()] = [
+    "random",
+    "next",
+    "loop",
+];
 
 pub fn init_key_bindings() -> Vec<Binding> {
+    enum CursorDirection {
+        X, Y,
+        TOP, BOTTOM,
+        SELECTED,
+    }
+    fn move_cursor(cursor_direction: CursorDirection, step: isize, menu_handler: &mut MenuHandler) {
+        let menus: [&mut Menu; 2] = [&mut menu_handler.main_menu, &mut menu_handler.sub_menu];
+
+        match cursor_direction {
+            CursorDirection::X => {
+                if step > 0 {
+                    menu_handler.selected_menu = 1;
+                } else if step < 0 {
+                    menu_handler.selected_menu = 0;
+                }
+            },
+            CursorDirection::Y => menus[menu_handler.selected_menu].move_cursor(step),
+
+            CursorDirection::TOP => menus[menu_handler.selected_menu].cursor = 0,
+            CursorDirection::BOTTOM => menus[menu_handler.selected_menu].cursor = usize::MAX,
+
+            CursorDirection::SELECTED => menus[menu_handler.selected_menu].cursor = menus[menu_handler.selected_menu].selected,
+        }
+
+        menu_handler.redraw = true;
+    }
+
     return vec![
         // quit
         Binding::new(
@@ -152,100 +184,80 @@ pub fn init_key_bindings() -> Vec<Binding> {
         ),
     ];
 }
-// bind functions
-pub enum CursorDirection {
-    X, Y,
-    TOP, BOTTOM,
-    SELECTED,
+
+pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 4];
+const fn separator() -> status_bar::ModuleHandler {
+    return status_bar::ModuleHandler::new(Color::White, Color::Black, None, |_| {
+        return String::from(" | ");
+    });
 }
-fn move_cursor(cursor_direction: CursorDirection, step: isize, menu_handler: &mut MenuHandler) {
-    let menus: [&mut Menu; 2] = [&mut menu_handler.main_menu, &mut menu_handler.sub_menu];
+pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
+    separator(),
+    status_bar::ModuleHandler::new(Color::White, Color::Black, Some(Duration::from_secs(1)), 
+        |menu_handler: &MenuHandler| {
+            const PHASES: [&str; 10] = [
+                "[         ]",
+                "[=        ]",
+                "[==       ]",
+                "[===      ]",
+                "[====     ]",
+                "[=====    ]",
+                "[======   ]",
+                "[=======  ]",
+                "[======== ]",
+                "[=========]",
+            ];
 
-    match cursor_direction {
-        CursorDirection::X => {
-            if step > 0 {
-                menu_handler.selected_menu = 1;
-            } else if step < 0 {
-                menu_handler.selected_menu = 0;
-            }
-        },
-        CursorDirection::Y => menus[menu_handler.selected_menu].move_cursor(step),
+            let current_duration: Duration = menu_handler.audio_handler.play_duration();
+            let current_duration: u64 = current_duration.as_secs();
 
-        CursorDirection::TOP => menus[menu_handler.selected_menu].cursor = 0,
-        CursorDirection::BOTTOM => menus[menu_handler.selected_menu].cursor = usize::MAX,
+            let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration.clone();
+            let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
+                let current_source_duration: Duration = current_source_duration.unwrap();
+                let current_source_duration: u64 = current_source_duration.as_secs();
 
-        CursorDirection::SELECTED => menus[menu_handler.selected_menu].cursor = menus[menu_handler.selected_menu].selected,
-    }
-
-    menu_handler.redraw = true;
-}
-
-pub fn init_status_bar_module_handlers() -> Vec<status_bar::ModuleHandler> {
-    return vec![
-        status_bar::ModuleHandler::new(Color::White, Color::Black, Duration::from_secs(1), 
-            |menu_handler: &MenuHandler| {
-                const PLAY_PHASES: [&str; 10] = [
-                    "[=         ]",
-                    "[==        ]",
-                    "[===       ]",
-                    "[====      ]",
-                    "[=====     ]",
-                    "[======    ]",
-                    "[=======   ]",
-                    "[========  ]",
-                    "[========= ]",
-                    "[==========]",
-                ];
-
-                let current_duration: Duration = menu_handler.audio_handler.play_duration();
-                let current_duration: u64 = current_duration.as_secs();
-
-                let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration.clone();
-                let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
-                    let current_source_duration: Duration = current_source_duration.unwrap();
-                    let current_source_duration: u64 = current_source_duration.as_secs();
-
-                    if current_source_duration != 0 {
-                        (current_duration / current_source_duration) as f32
-                    } else {
-                        0.0
-                    }
+                if current_source_duration != 0 {
+                    (current_duration / current_source_duration) as f32
                 } else {
                     0.0
-                };
-
-                if PLAY_PHASES.len() == 0 {
-                    return String::new();
                 }
+            } else {
+                0.0
+            };
 
-                let play_percentage: usize = (((PLAY_PHASES.len() - 1) as f32) * play_percentage) as usize;
-                return if play_percentage >= PLAY_PHASES.len() {
-                    PLAY_PHASES[PLAY_PHASES.len() - 1].to_string()
-                } else {
-                    PLAY_PHASES[play_percentage].to_string()
-                };
+            let play_percentage: usize = ((PHASES.len() as f32) * play_percentage) as usize;
+            return if play_percentage >= PHASES.len() {
+                PHASES[PHASES.len() - 1].to_string()
+            } else {
+                PHASES[play_percentage].to_string()
+            };
 
-                //use crate::cast;
-                //let play_percentage: f32 = if menu_handler.audio_handler.current_source_duration.is_some() {
-                //    let current_source_duration: Duration = menu_handler.audio_handler.current_source_duration.unwrap();
-                //}
+            //use crate::cast;
+            //let play_percentage: f32 = if menu_handler.audio_handler.current_source_duration.is_some() {
+            //    let current_source_duration: Duration = menu_handler.audio_handler.current_source_duration.unwrap();
+            //}
 
-                //fn pad_usage(num: usize) -> String {
-                //    return if num < 10 {
-                //        "0".to_string() + &num.to_string()
-                //    } else {
-                //        num.to_string()
-                //    }
-                //}
-                //
-                //let seconds: usize = cast!(duration.as_secs());
-                //let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
-                //
-                //let seconds: String = pad_usize(seconds);
-                //let minutes: String = pad_usize(minutes);
-                //
-                //return minutes + ":" + &seconds.to_string();
-            }
-        ),
-    ];
-}
+            //fn pad_usize(num: usize) -> String {
+            //    return if num < 10 {
+            //        "0".to_string() + &num.to_string()
+            //    } else {
+            //        num.to_string()
+            //    }
+            //}
+            //
+            //let seconds: usize = cast!(duration.as_secs());
+            //let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
+            //
+            //let seconds: String = pad_usize(seconds);
+            //let minutes: String = pad_usize(minutes);
+            //
+            //return minutes + ":" + &seconds.to_string();
+        }
+    ),
+    separator(),
+    // play change song callback name
+    status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
+        |menu_handler: &MenuHandler| {
+            return SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string();
+        }),
+];
