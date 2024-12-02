@@ -22,18 +22,24 @@ use {
 pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
 
 pub struct StatusBar {
+    redraw: bool,
     pub force_update: bool,
     module_handlers: config::StatusBarModuleHandlersType,
 }
 impl StatusBar {
     pub const fn new() -> StatusBar {
         return StatusBar {
+            redraw: true,
             force_update: true,
             module_handlers: config::STATUS_BAR_MODULE_HANDLERS,
         };
     }
 
-    pub fn draw(&self, event_handler: &EventHandler) -> Result<()> {
+    pub fn draw(&mut self, event_handler: &EventHandler) -> Result<()> {
+        if !self.redraw {
+            return Result::Ok(());
+        }
+
         wrappers::cursor::move_to(0, 0)?;
         for module_handler in &self.module_handlers {
             let (x, _) = crossterm::cursor::position()?;
@@ -53,12 +59,13 @@ impl StatusBar {
             wrappers::print::empty_text(cast!(undrawn))?;
         }
 
-
+        self.redraw = false;
         return Result::Ok(());
     }
 
     pub fn update(&mut self, menu_handler: &MenuHandler) {
         if self.force_update {
+            self.redraw = true;
             for module_handler in &mut self.module_handlers {
                 module_handler.update_force(menu_handler);
             }
@@ -66,7 +73,10 @@ impl StatusBar {
         }
 
         for module_handler in &mut self.module_handlers {
-            module_handler.update(menu_handler);
+            let redraw: bool = module_handler.update(menu_handler);
+            if redraw {
+                self.redraw = redraw;
+            }
         }
     }
 }
@@ -109,9 +119,9 @@ impl ModuleHandler {
         return Result::Ok(());
     }
 
-    pub fn update(&mut self, menu_handler: &MenuHandler) {
+    pub fn update(&mut self, menu_handler: &MenuHandler) -> bool {
         if self.update_interval.is_none() {
-            return;
+            return false;
         }
 
         let now: Instant = Instant::now();
@@ -119,7 +129,10 @@ impl ModuleHandler {
         if self.last_update.is_none() || now.duration_since(self.last_update.unwrap()) > self.update_interval.unwrap() {
             self.last_update = Some(now);
             self.update_force(menu_handler);
+            return true;
         }
+
+        return false;
     }
     pub fn update_force(&mut self, menu_handler: &MenuHandler) {
         self.print_string = (self.update_callback)(menu_handler);
