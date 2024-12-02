@@ -1,6 +1,7 @@
 use {
     crate::{cast, config, event_handler::EventHandler, menu_handler::MenuHandler, wrappers},
     crossterm::{self, style::Color},
+    enum_map::EnumMap,
     std::{
         io::Result,
         time::{Duration, Instant},
@@ -8,18 +9,21 @@ use {
 };
 
 pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
+pub type SignalCallback = fn(menu_handler: &MenuHandler, signals: &EnumMap<config::StatusBarModuleSignal, bool>) -> Option<String>;
 
 pub struct StatusBar {
     redraw: bool,
-    pub force_update: bool,
+    force_update: bool,
     module_handlers: config::StatusBarModuleHandlersType,
+    pub signals: EnumMap<config::StatusBarModuleSignal, bool>,
 }
 impl StatusBar {
-    pub const fn new() -> StatusBar {
+    pub fn new() -> StatusBar {
         StatusBar {
             redraw: true,
             force_update: true,
             module_handlers: config::STATUS_BAR_MODULE_HANDLERS,
+            signals: EnumMap::default()
         }
     }
 
@@ -57,13 +61,33 @@ impl StatusBar {
             for module_handler in &mut self.module_handlers {
                 module_handler.update_force(menu_handler);
             }
+            self.force_update = false;
             return;
         }
 
         for module_handler in &mut self.module_handlers {
-            let redraw: bool = module_handler.update(menu_handler);
-            if redraw {
-                self.redraw = redraw;
+            if module_handler.update(menu_handler) {
+                self.redraw = true;
+            }
+        }
+
+        let mut update_signals: bool = false;
+        for signal in self.signals.into_array() {
+            if signal {
+                update_signals = true;
+                break;
+            }
+        }
+
+        if update_signals {
+            for module_handler in &mut self.module_handlers {
+                if module_handler.update_signals(menu_handler, &self.signals) {
+                    self.redraw = true;
+                }
+            }
+
+            for ref mut signal in self.signals.into_array() {
+                *signal = false;
             }
         }
     }
@@ -76,15 +100,20 @@ pub struct ModuleHandler {
     update_interval: Option<Duration>,
     update_callback: ModuleCallback,
 
-    pub print_string: String,
+    signal_callback: Option<SignalCallback>,
+
+    print_string: String,
     last_update: Option<Instant>,
 }
 impl ModuleHandler {
     pub const fn new(
         foreground: Color,
         background: Color,
+
         update_interval: Option<Duration>,
         update_callback: ModuleCallback,
+
+        signal_callback: Option<SignalCallback>
     ) -> ModuleHandler {
         ModuleHandler {
             foreground,
@@ -92,6 +121,8 @@ impl ModuleHandler {
 
             update_interval,
             update_callback,
+
+            signal_callback,
 
             print_string: String::new(),
             last_update: None,
@@ -129,6 +160,20 @@ impl ModuleHandler {
 
         false
     }
+
+    pub fn update_signals(&mut self, menu_handler: &MenuHandler, signals: &EnumMap<config::StatusBarModuleSignal, bool>) -> bool {
+        let Some(callback) = self.signal_callback else {
+            return false;
+        };
+        let Some(result) = callback(menu_handler, signals) else {
+            return false;
+        };
+
+        self.print_string = result;
+
+        true
+    }
+
     pub fn update_force(&mut self, menu_handler: &MenuHandler) {
         self.print_string = (self.update_callback)(menu_handler);
     }
