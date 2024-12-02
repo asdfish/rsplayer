@@ -33,27 +33,27 @@ pub struct MenuHandler {
 
 impl MenuHandler {
     pub fn new() -> Result<MenuHandler> {
-        let playlist_names: Vec<String> = filesystem::get_entries(config::PLAYLISTS_DIRECTORY, filesystem::EntryType::DIRECTORY)?;
+        let playlist_names: Vec<String> = filesystem::get_entries(config::PLAYLISTS_DIRECTORY, filesystem::EntryType::Directory)?;
         let mut playlists: Vec<Vec<String>> = Vec::new();
 
         let playlist_names_length: usize = playlist_names.len();
 
         for playlist_name in &playlist_names {
-            playlists.push(filesystem::get_entries(&Self::get_playlist_path(&playlist_name), filesystem::EntryType::FILE)?);
+            playlists.push(filesystem::get_entries(&Self::get_playlist_path(playlist_name), filesystem::EntryType::File)?);
         }
 
         for i in 0..playlists.len() {
-            if playlists[i].len() == 0 {
+            if playlists[i].is_empty() {
                 playlists.remove(i);
             }
         }
-        if playlists.len() == 0 {
+        if playlists.is_empty() {
             panic!("No playlists were found");
         }
 
         let mut menu_handler: MenuHandler = MenuHandler {
-            playlist_names: playlist_names,
-            playlists: playlists,
+            playlist_names,
+            playlists,
 
             main_menu: Menu::new(),
             sub_menu: Menu::new(),
@@ -70,7 +70,7 @@ impl MenuHandler {
         };
         menu_handler.sub_menu.reverse_colors = false;
 
-        return Result::Ok(menu_handler);
+        Result::Ok(menu_handler)
     }
 
     pub fn change_sub_menu(&mut self, new_sub_menu: usize) {
@@ -103,7 +103,7 @@ impl MenuHandler {
         self.sub_menu.draw(&self.playlists[self.main_menu.selected])?;
 
         self.redraw = false;
-        return Result::Ok(());
+        Result::Ok(())
     }
 
     pub fn switch_song(&mut self) {
@@ -123,13 +123,13 @@ impl MenuHandler {
     }
 
     pub fn get_playlist_path(playlist_name: &str) -> String {
-        return format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name);
+        format!("{}/{}", config::PLAYLISTS_DIRECTORY, playlist_name)
     }
     pub fn get_playlist_song_path(playlist_name: &str, song_name: &str) -> String {
-        return format!("{}/{}", Self::get_playlist_path(playlist_name), song_name);
+        format!("{}/{}", Self::get_playlist_path(playlist_name), song_name)
     }
 
     pub fn get_current_playlist(&self) -> &Vec<String> {
-        return &self.playlists[self.main_menu.selected];
+        &self.playlists[self.main_menu.selected]
     }
 }

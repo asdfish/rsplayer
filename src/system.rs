@@ -41,11 +41,11 @@ use {
 pub fn init() -> Result<()> {
     init_hooks();
     init_terminal()?;
-    return Result::Ok(());
+    Result::Ok(())
 }
 fn init_hooks() {
     panic::set_hook(Box::new(|panic_info| {
-        let _ = uninit();
+        uninit();
         println!("{}", panic_info);
         process::exit(-1);
     }));
@@ -56,7 +56,7 @@ fn init_hooks() {
             println!("Caught signal: {}", ctrl_type);
             uninit();
 
-            return FALSE;
+            FALSE
         }
 
         if 0 == unsafe { SetConsoleCtrlHandler(Some(ctrl_handler), TRUE) } {
@@ -70,8 +70,8 @@ fn init_hooks() {
         let mut signals: Signals = Signals::new([SIGINT, SIGTERM]).unwrap();
 
         thread::spawn(move || {
-            for signal in &mut signals {
-                let _ = uninit();
+            if let Some(signal) = (&mut signals).into_iter().next() {
+                uninit();
                 panic!("Caught signal: {}", signal);
             }
         });
@@ -83,17 +83,13 @@ fn init_terminal() -> Result<()> {
         terminal::EnterAlternateScreen,
         cursor::Hide)?;
 
-    return Result::Ok(());
+    Result::Ok(())
 }
 
 pub fn uninit() {
-    match terminal::is_raw_mode_enabled() {
-        Ok(is_raw_mode_enabled) => {
-            if is_raw_mode_enabled {
-                let _result = terminal::disable_raw_mode();
-            }
-        },
-        _ => {}
+    let is_raw_mode_enabled: Result<bool> = terminal::is_raw_mode_enabled();
+    if is_raw_mode_enabled.is_ok() && is_raw_mode_enabled.unwrap() {
+        let _ = terminal::disable_raw_mode();
     }
 
     let _result = execute!(stdout(),

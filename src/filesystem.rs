@@ -8,22 +8,22 @@ use std::{
 };
 
 pub enum EntryType {
-    DIRECTORY,
-    FILE,
+    Directory,
+    File,
 }
 
 fn directory_entry_is_entry_type(directory_entry: &DirEntry, entry_type: &EntryType) -> bool {
     let file_type: Result<FileType> = directory_entry.file_type();
-    if !file_type.is_ok() {
+    if file_type.is_err() {
         return false;
     }
     let file_type: FileType = file_type.unwrap();
 
 
-    return match entry_type {
-        EntryType::DIRECTORY => file_type.is_dir(),
-        EntryType::FILE => file_type.is_file(),
-    };
+    match entry_type {
+        EntryType::Directory => file_type.is_dir(),
+        EntryType::File => file_type.is_file(),
+    }
 }
 
 pub fn get_entries(path: &str, entry_type: EntryType) -> Result<Vec<String>> {
@@ -45,5 +45,5 @@ pub fn get_entries(path: &str, entry_type: EntryType) -> Result<Vec<String>> {
         }
     }
 
-    return Result::Ok(entries);
+    Result::Ok(entries)
 }

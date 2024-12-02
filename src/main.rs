@@ -39,7 +39,7 @@ fn main() {
         stdout()
             .flush().unwrap();
 
-        let _ = status_bar.update(&mut menu_handler);
+        status_bar.update(&menu_handler);
         let _ = event_handler.update(&mut menu_handler, &mut status_bar);
 
         if !menu_handler.audio_handler.is_playing() {

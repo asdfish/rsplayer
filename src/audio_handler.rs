@@ -24,12 +24,12 @@ impl AudioHandler {
         let (stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
 
-        return AudioHandler {
+        AudioHandler {
             _stream: stream,
-            sink: sink,
+            sink,
 
             current_source_duration: None,
-        };
+        }
     }
 
     pub fn play(&mut self, path: String) {
@@ -46,10 +46,10 @@ impl AudioHandler {
         self.sink.play();
     }
     pub fn play_duration(&self) -> Duration {
-        return self.sink.get_pos();
+        self.sink.get_pos()
     }
 
     pub fn is_playing(&self) -> bool {
-        return !self.sink.empty() || self.sink.is_paused();
+        !self.sink.empty() || self.sink.is_paused()
     }
 }

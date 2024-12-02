@@ -26,7 +26,7 @@ pub struct EventHandler {
 
 impl EventHandler {
     pub fn new() -> EventHandler {
-        return EventHandler {
+        EventHandler {
             width: 0,
             height: 0,
             key_event_handler: keys::KeyEventHandler::new(config::init_key_bindings()),
@@ -36,7 +36,7 @@ impl EventHandler {
     pub fn resize(&mut self, menu_handler: &mut MenuHandler) -> Result<()> {
         let (width, height) = terminal::size()?;
 
-        return self.resize_to(menu_handler, width, height);
+        self.resize_to(menu_handler, width, height)
     }
 
     pub fn resize_to(&mut self, menu_handler: &mut MenuHandler, width: u16, height: u16) -> Result<()> {
@@ -51,7 +51,7 @@ impl EventHandler {
         }
 
         menu_handler.redraw = true;
-        return Result::Ok(());
+        Result::Ok(())
     }
     fn resize_main_menu(main_menu: &mut Menu, width: u16, height: u16) {
         main_menu.x = 0;
@@ -105,6 +105,6 @@ impl EventHandler {
             }
         }
 
-        return Result::Ok(());
+        Result::Ok(())
     }
 }

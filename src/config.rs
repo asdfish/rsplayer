@@ -19,7 +19,10 @@ use {
         },
         style::Color,
     },
-    std::time::Duration,
+    std::{
+        cmp::Ordering,
+        time::Duration,
+    },
 };
 
 pub const PLAYLISTS_DIRECTORY: &str = "/path/to/your/playlists";
@@ -65,44 +68,44 @@ pub const SWITCH_SONG_CALLBACK_NAMES: [&str; SWITCH_SONG_CALLBACKS.len()] = [
 pub fn init_key_bindings() -> Vec<Binding> {
     enum CursorDirection {
         X, Y,
-        TOP, BOTTOM,
-        SELECTED,
+        Top, Bottom,
+        Selected,
     }
     fn move_cursor(cursor_direction: CursorDirection, step: isize, menu_handler: &mut MenuHandler) {
         let menus: [&mut Menu; 2] = [&mut menu_handler.main_menu, &mut menu_handler.sub_menu];
 
         match cursor_direction {
             CursorDirection::X => {
-                if step > 0 {
-                    menu_handler.selected_menu = 1;
-                } else if step < 0 {
-                    menu_handler.selected_menu = 0;
+                match step.cmp(&0) {
+                    Ordering::Greater => menu_handler.selected_menu = 1,
+                    Ordering::Less => menu_handler.selected_menu = 0,
+                    _ => {},
                 }
             },
             CursorDirection::Y => menus[menu_handler.selected_menu].move_cursor(step),
 
-            CursorDirection::TOP => menus[menu_handler.selected_menu].cursor = 0,
-            CursorDirection::BOTTOM => menus[menu_handler.selected_menu].cursor = usize::MAX,
+            CursorDirection::Top => menus[menu_handler.selected_menu].cursor = 0,
+            CursorDirection::Bottom => menus[menu_handler.selected_menu].cursor = usize::MAX,
 
-            CursorDirection::SELECTED => menus[menu_handler.selected_menu].cursor = menus[menu_handler.selected_menu].selected,
+            CursorDirection::Selected => menus[menu_handler.selected_menu].cursor = menus[menu_handler.selected_menu].selected,
         }
 
         menu_handler.redraw = true;
     }
     enum SwitchSongCallbackDirection {
-        LEFT,
-        RIGHT,
+        Left,
+        Right,
     }
     fn switch_song(direction: SwitchSongCallbackDirection, menu_handler: &mut MenuHandler) {
         match direction {
-            SwitchSongCallbackDirection::LEFT => {
+            SwitchSongCallbackDirection::Left => {
                 if menu_handler.switch_song_callback == 0 {
                     menu_handler.switch_song_callback = SWITCH_SONG_CALLBACKS.len() - 1;
                 } else {
                     menu_handler.switch_song_callback -= 1;
                 }
             },
-            SwitchSongCallbackDirection::RIGHT => {
+            SwitchSongCallbackDirection::Right => {
                 menu_handler.switch_song_callback += 1;
                 if menu_handler.switch_song_callback >= SWITCH_SONG_CALLBACKS.len() {
                     menu_handler.switch_song_callback = 0;
@@ -111,7 +114,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
         }
     }
 
-    return vec![
+    vec![
         // quit
         Binding::new(
             vec![
@@ -148,21 +151,21 @@ pub fn init_key_bindings() -> Vec<Binding> {
             vec![
                 KeyEvent::new( KeyCode::Char('G'), KeyModifiers::SHIFT ),
             ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::BOTTOM, 0, menu_handler); },
+            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Bottom, 0, menu_handler); },
         ),
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
                 KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
             ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::TOP, 0, menu_handler); },
+            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Top, 0, menu_handler); },
         ),
         // return to selected item
         Binding::new(
             vec![
                 KeyEvent::new( KeyCode::Char('r'), KeyModifiers::NONE ),
             ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::SELECTED, 0, menu_handler); },
+            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Selected, 0, menu_handler); },
         ),
         // switch song
         Binding::new(
@@ -197,7 +200,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
                 KeyEvent::new( KeyCode::Char('H'), KeyModifiers::SHIFT ),
             ],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
-                switch_song(SwitchSongCallbackDirection::LEFT, menu_handler);
+                switch_song(SwitchSongCallbackDirection::Left, menu_handler);
                 status_bar.force_update = true;
             }
         ),
@@ -206,19 +209,19 @@ pub fn init_key_bindings() -> Vec<Binding> {
                 KeyEvent::new( KeyCode::Char('L'), KeyModifiers::SHIFT ),
             ],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
-                switch_song(SwitchSongCallbackDirection::RIGHT, menu_handler);
+                switch_song(SwitchSongCallbackDirection::Right, menu_handler);
                 status_bar.force_update = true;
             }
         ),
-    ];
+    ]
 }
 
 pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 9];
 fn separator_callback(_: &MenuHandler) -> String {
-    return String::from(" | ");
+    String::from(" | ")
 }
 const fn separator() -> status_bar::ModuleHandler {
-    return status_bar::ModuleHandler::new(Color::White, Color::Black, None, separator_callback);
+    status_bar::ModuleHandler::new(Color::White, Color::Black, None, separator_callback)
 }
 pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
     separator(),
@@ -240,7 +243,7 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             let current_duration: Duration = menu_handler.audio_handler.play_duration();
             let current_duration: u64 = current_duration.as_secs();
 
-            let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration.clone();
+            let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration;
             let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
                 let current_source_duration: Duration = current_source_duration.unwrap();
                 let current_source_duration: u64 = current_source_duration.as_secs();
@@ -255,50 +258,29 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             };
 
             let play_percentage: usize = ((PHASES.len() as f32) * play_percentage) as usize;
-            return if play_percentage >= PHASES.len() {
+            if play_percentage >= PHASES.len() {
                 PHASES[PHASES.len() - 1].to_string()
             } else {
                 PHASES[play_percentage].to_string()
-            };
-
-            //use crate::cast;
-            //let play_percentage: f32 = if menu_handler.audio_handler.current_source_duration.is_some() {
-            //    let current_source_duration: Duration = menu_handler.audio_handler.current_source_duration.unwrap();
-            //}
-
-            //fn pad_usize(num: usize) -> String {
-            //    return if num < 10 {
-            //        "0".to_string() + &num.to_string()
-            //    } else {
-            //        num.to_string()
-            //    }
-            //}
-            //
-            //let seconds: usize = cast!(duration.as_secs());
-            //let minutes: usize = if seconds == 0 { 0 } else { seconds / 60 };
-            //
-            //let seconds: String = pad_usize(seconds);
-            //let minutes: String = pad_usize(minutes);
-            //
-            //return minutes + ":" + &seconds.to_string();
+            }
         }
     ),
     separator(),
     // play change song callback name
     status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
         |menu_handler: &MenuHandler| {
-            return SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string();
+            SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string()
         }),
     // current playlist
     separator(),
     status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
         |menu_handler: &MenuHandler| {
-            return menu_handler.playlist_names[menu_handler.main_menu.selected].clone();
+            menu_handler.playlist_names[menu_handler.main_menu.selected].clone()
         }),
     separator(),
-    status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
+    status_bar::ModuleHandler::new(Color::Red, Color::Black, None, 
         |menu_handler: &MenuHandler| {
-            return menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected].clone();
+            menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected].clone()
         }),
     separator(),
 ];

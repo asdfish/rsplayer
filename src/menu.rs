@@ -23,28 +23,26 @@ pub struct Menu {
 
 impl Menu {
     pub const fn new() -> Menu {
-        return Menu {
+        Menu {
             x: 0, y: 0, width: 0, height: 0,
             camera: 0, cursor: 0,
 
             selected: 0,
 
             reverse_colors: true,
-        };
+        }
     }
 
-    pub fn draw(&mut self, items: &Vec<String>) -> Result<()> {
+    pub fn draw(&mut self, items: &[String]) -> Result<()> {
         if self.width == 0 || self.height == 0 {
             return Ok(());
         }
 
-        if items.len() != 0 {
-            if self.cursor > items.len() - 1 {
-                self.cursor = items.len();
+        if !items.is_empty() && self.cursor > items.len() - 1 {
+            self.cursor = items.len();
 
-                if self.cursor != 0 {
-                    self.cursor = self.cursor - 1;
-                }
+            if self.cursor != 0 {
+                self.cursor -= 1;
             }
         }
 
@@ -65,12 +63,10 @@ impl Menu {
                 } else {
                     wrappers::style::set_color(config::NORMAL_FOREGROUND, config::NORMAL_BACKGROUND)?;
                 }
+            } else if self.reverse_colors && self.cursor == item_y {
+                wrappers::style::set_color(config::SELECTED_FOREGROUND_REVERSED, config::SELECTED_BACKGROUND_REVERSED)?;
             } else {
-                if self.reverse_colors && self.cursor == item_y {
-                    wrappers::style::set_color(config::SELECTED_FOREGROUND_REVERSED, config::SELECTED_BACKGROUND_REVERSED)?;
-                } else {
-                    wrappers::style::set_color(config::SELECTED_FOREGROUND, config::SELECTED_BACKGROUND)?;
-                }
+                wrappers::style::set_color(config::SELECTED_FOREGROUND, config::SELECTED_BACKGROUND)?;
             }
 
             if item_y >= items.len() {
@@ -83,7 +79,7 @@ impl Menu {
             wrappers::style::reset_color()?;
         }
 
-        return Result::Ok(());
+        Result::Ok(())
     }
     pub fn move_cursor(&mut self, step: isize) {
         let cursor: isize = cast!(self.cursor);

@@ -15,9 +15,9 @@ pub struct Binding {
 }
 impl Binding {
     pub const fn new(key_events: Vec<event::KeyEvent>, callback: BindingCallback) -> Binding {
-        return Binding {
-            key_events: key_events,
-            callback: callback,
+        Binding {
+            key_events,
+            callback,
         }
     }
 }
@@ -30,7 +30,7 @@ pub struct KeyEventHandler {
 impl KeyEventHandler {
     pub fn new(key_bindings: Vec<Binding>) -> KeyEventHandler {
         let mut event_handler: KeyEventHandler = KeyEventHandler {
-            key_bindings: key_bindings,
+            key_bindings,
             key_events: Vec::new()
         };
 
@@ -41,7 +41,7 @@ impl KeyEventHandler {
             }
         }
         event_handler.key_events.reserve(max_key_binding_length);
-        return event_handler;
+        event_handler
     }
 
     pub fn update(&mut self, event: event::KeyEvent, menu_handler: &mut MenuHandler, status_bar: &mut StatusBar) -> Result<()> {
@@ -69,7 +69,7 @@ impl KeyEventHandler {
             (self.key_bindings[same_event_id].callback)(menu_handler, status_bar);
         }
 
-        return Result::Ok(());
+        Result::Ok(())
     }
 
     fn same_event(model: &Vec<event::KeyEvent>, follower: &Vec<event::KeyEvent>) -> bool {
@@ -85,7 +85,7 @@ impl KeyEventHandler {
             }
         }
 
-        return true;
+        true
     }
     fn valid_event(model: &Vec<event::KeyEvent>, follower: &Vec<event::KeyEvent>) -> bool {
         if follower.len() > model.len() {
@@ -100,6 +100,6 @@ impl KeyEventHandler {
             }
         }
 
-        return true;
+        true
     }
 }
