@@ -9,7 +9,10 @@ use {
 };
 
 pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
-pub type SignalCallback = fn(menu_handler: &MenuHandler, signals: &EnumMap<config::StatusBarModuleSignal, bool>) -> Option<String>;
+pub type SignalCallback = fn(
+    menu_handler: &MenuHandler,
+    signals: &EnumMap<config::StatusBarModuleSignal, bool>,
+) -> Option<String>;
 
 pub struct StatusBar {
     redraw: bool,
@@ -23,7 +26,7 @@ impl StatusBar {
             redraw: true,
             force_update: true,
             module_handlers: config::STATUS_BAR_MODULE_HANDLERS,
-            signals: EnumMap::default()
+            signals: EnumMap::default(),
         }
     }
 
@@ -113,7 +116,7 @@ impl ModuleHandler {
         update_interval: Option<Duration>,
         update_callback: ModuleCallback,
 
-        signal_callback: Option<SignalCallback>
+        signal_callback: Option<SignalCallback>,
     ) -> ModuleHandler {
         ModuleHandler {
             foreground,
@@ -161,7 +164,11 @@ impl ModuleHandler {
         false
     }
 
-    pub fn update_signals(&mut self, menu_handler: &MenuHandler, signals: &EnumMap<config::StatusBarModuleSignal, bool>) -> bool {
+    pub fn update_signals(
+        &mut self,
+        menu_handler: &MenuHandler,
+        signals: &EnumMap<config::StatusBarModuleSignal, bool>,
+    ) -> bool {
         let Some(callback) = self.signal_callback else {
             return false;
         };

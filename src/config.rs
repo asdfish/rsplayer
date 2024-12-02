@@ -9,10 +9,7 @@ use {
         event::{KeyCode, KeyEvent, KeyModifiers},
         style::Color,
     },
-    enum_map::{
-        Enum,
-        EnumMap,
-    },
+    enum_map::{Enum, EnumMap},
     std::{cmp::Ordering, time::Duration},
 };
 
@@ -263,7 +260,8 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             } else {
                 PHASES[play_percentage].to_string()
             }
-        }, None,
+        },
+        None,
     ),
     separator(),
     // play change song callback name
@@ -274,13 +272,17 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
         |menu_handler: &MenuHandler| {
             SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string()
         },
-        Some(|menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-            if signals[StatusBarModuleSignal::ChangedSwitchSongCallback] {
-                return Some(SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string());
-            }
+        Some(
+            |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
+                if signals[StatusBarModuleSignal::ChangedSwitchSongCallback] {
+                    return Some(
+                        SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string(),
+                    );
+                }
 
-            None
-        }),
+                None
+            },
+        ),
     ),
     // current playlist
     separator(),
@@ -291,12 +293,16 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
         |menu_handler: &MenuHandler| {
             menu_handler.playlist_names[menu_handler.main_menu.selected].clone()
         },
-        Some(|menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-            if signals[StatusBarModuleSignal::ChangedSong] {
-                return Some(menu_handler.playlist_names[menu_handler.main_menu.selected].clone());
-            }
-            None
-        }),
+        Some(
+            |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
+                if signals[StatusBarModuleSignal::ChangedSong] {
+                    return Some(
+                        menu_handler.playlist_names[menu_handler.main_menu.selected].clone(),
+                    );
+                }
+                None
+            },
+        ),
     ),
     separator(),
     status_bar::ModuleHandler::new(
@@ -307,13 +313,18 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected]
                 .clone()
         },
-        Some(|menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-            if signals[StatusBarModuleSignal::ChangedSong] {
-                return Some(menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected]
-                    .clone());
-            }
-            None
-        }),
+        Some(
+            |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
+                if signals[StatusBarModuleSignal::ChangedSong] {
+                    return Some(
+                        menu_handler.playlists[menu_handler.main_menu.selected]
+                            [menu_handler.sub_menu.selected]
+                            .clone(),
+                    );
+                }
+                None
+            },
+        ),
     ),
     separator(),
 ];

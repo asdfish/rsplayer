@@ -1,6 +1,6 @@
 [package]
 name = "rsplayer"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["asdfish <lgray3420@gmail.com>"]
 description = "rust music player"
 license = "BSD-3-Clause"
