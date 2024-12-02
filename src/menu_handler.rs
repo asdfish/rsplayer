@@ -1,14 +1,6 @@
 use {
-    crate::{
-        config,
-        filesystem,
-        menu::Menu,
-        audio_handler::AudioHandler,
-    },
-    std::{
-        io::Result,
-        panic,
-    },
+    crate::{audio_handler::AudioHandler, config, filesystem, menu::Menu},
+    std::{io::Result, panic},
 };
 
 pub type SwitchSongCallback = fn(menu_handler: &mut MenuHandler);
@@ -33,13 +25,19 @@ pub struct MenuHandler {
 
 impl MenuHandler {
     pub fn new() -> Result<MenuHandler> {
-        let playlist_names: Vec<String> = filesystem::get_entries(config::PLAYLISTS_DIRECTORY, filesystem::EntryType::Directory)?;
+        let playlist_names: Vec<String> = filesystem::get_entries(
+            config::PLAYLISTS_DIRECTORY,
+            filesystem::EntryType::Directory,
+        )?;
         let mut playlists: Vec<Vec<String>> = Vec::new();
 
         let playlist_names_length: usize = playlist_names.len();
 
         for playlist_name in &playlist_names {
-            playlists.push(filesystem::get_entries(&Self::get_playlist_path(playlist_name), filesystem::EntryType::File)?);
+            playlists.push(filesystem::get_entries(
+                &Self::get_playlist_path(playlist_name),
+                filesystem::EntryType::File,
+            )?);
         }
 
         for i in 0..playlists.len() {
@@ -58,7 +56,7 @@ impl MenuHandler {
             main_menu: Menu::new(),
             sub_menu: Menu::new(),
             selected_menu: 0,
-            
+
             sub_menu_selections: vec![0; playlist_names_length],
 
             audio_handler: AudioHandler::new(),
@@ -91,16 +89,17 @@ impl MenuHandler {
             0 => {
                 self.main_menu.reverse_colors = true;
                 self.sub_menu.reverse_colors = false;
-            },
+            }
             1 => {
                 self.main_menu.reverse_colors = false;
                 self.sub_menu.reverse_colors = true;
-            },
+            }
             _ => unreachable!(),
         };
 
         self.main_menu.draw(&self.playlist_names)?;
-        self.sub_menu.draw(&self.playlists[self.main_menu.selected])?;
+        self.sub_menu
+            .draw(&self.playlists[self.main_menu.selected])?;
 
         self.redraw = false;
         Result::Ok(())
@@ -118,8 +117,9 @@ impl MenuHandler {
         };
 
         self.audio_handler.play(MenuHandler::get_playlist_song_path(
-                &self.playlist_names[self.main_menu.selected],
-                &self.playlists[self.main_menu.selected][self.sub_menu.selected]));
+            &self.playlist_names[self.main_menu.selected],
+            &self.playlists[self.main_menu.selected][self.sub_menu.selected],
+        ));
     }
 
     pub fn get_playlist_path(playlist_name: &str) -> String {

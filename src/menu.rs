@@ -1,9 +1,5 @@
 use {
-    crate::{
-        cast,
-        config,
-        wrappers,
-    },
+    crate::{cast, config, wrappers},
     std::io::Result,
 };
 
@@ -24,8 +20,12 @@ pub struct Menu {
 impl Menu {
     pub const fn new() -> Menu {
         Menu {
-            x: 0, y: 0, width: 0, height: 0,
-            camera: 0, cursor: 0,
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            camera: 0,
+            cursor: 0,
 
             selected: 0,
 
@@ -59,14 +59,26 @@ impl Menu {
 
             if self.selected != item_y {
                 if self.reverse_colors && self.cursor == item_y {
-                    wrappers::style::set_color(config::NORMAL_FOREGROUND_REVERSED, config::NORMAL_BACKGROUND_REVERSED)?;
+                    wrappers::style::set_color(
+                        config::NORMAL_FOREGROUND_REVERSED,
+                        config::NORMAL_BACKGROUND_REVERSED,
+                    )?;
                 } else {
-                    wrappers::style::set_color(config::NORMAL_FOREGROUND, config::NORMAL_BACKGROUND)?;
+                    wrappers::style::set_color(
+                        config::NORMAL_FOREGROUND,
+                        config::NORMAL_BACKGROUND,
+                    )?;
                 }
             } else if self.reverse_colors && self.cursor == item_y {
-                wrappers::style::set_color(config::SELECTED_FOREGROUND_REVERSED, config::SELECTED_BACKGROUND_REVERSED)?;
+                wrappers::style::set_color(
+                    config::SELECTED_FOREGROUND_REVERSED,
+                    config::SELECTED_BACKGROUND_REVERSED,
+                )?;
             } else {
-                wrappers::style::set_color(config::SELECTED_FOREGROUND, config::SELECTED_BACKGROUND)?;
+                wrappers::style::set_color(
+                    config::SELECTED_FOREGROUND,
+                    config::SELECTED_BACKGROUND,
+                )?;
             }
 
             if item_y >= items.len() {

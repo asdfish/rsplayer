@@ -1,41 +1,21 @@
 use {
+    crossterm::{cursor, execute, style, terminal},
     std::{
-        io::{
-            stdout,
-            Result,
-        },
-        panic,
-        process,
-    },
-    crossterm::{
-        cursor,
-        execute,
-        style,
-        terminal,
+        io::{stdout, Result},
+        panic, process,
     },
 };
 
 #[cfg(windows)]
-use {
-    winapi::{
-        shared::minwindef::{
-            BOOL,
-            DWORD,
-            FALSE,
-            TRUE,
-        },
-        um::consoleapi::SetConsoleCtrlHandler,
-    },
+use winapi::{
+    shared::minwindef::{BOOL, DWORD, FALSE, TRUE},
+    um::consoleapi::SetConsoleCtrlHandler,
 };
 
 #[cfg(unix)]
 use {
+    signal_hook::{consts::SIGINT, consts::SIGTERM, iterator::Signals},
     std::thread,
-    signal_hook::{
-        consts::SIGINT,
-        consts::SIGTERM,
-        iterator::Signals,
-    },
 };
 
 pub fn init() -> Result<()> {
@@ -79,9 +59,7 @@ fn init_hooks() {
 }
 fn init_terminal() -> Result<()> {
     terminal::enable_raw_mode()?;
-    execute!(stdout(),
-        terminal::EnterAlternateScreen,
-        cursor::Hide)?;
+    execute!(stdout(), terminal::EnterAlternateScreen, cursor::Hide)?;
 
     Result::Ok(())
 }
@@ -92,8 +70,10 @@ pub fn uninit() {
         let _ = terminal::disable_raw_mode();
     }
 
-    let _result = execute!(stdout(),
+    let _result = execute!(
+        stdout(),
         style::ResetColor,
         terminal::LeaveAlternateScreen,
-        cursor::Show);
+        cursor::Show
+    );
 }

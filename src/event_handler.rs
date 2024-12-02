@@ -1,19 +1,7 @@
 use {
-    crate::{
-        config,
-        cast,
-        menu::Menu,
-        menu_handler::MenuHandler,
-        status_bar::StatusBar,
-    },
-    crossterm::{
-        event,
-        terminal,
-    },
-    std::{
-        io::Result,
-        time::Duration,
-    },
+    crate::{cast, config, menu::Menu, menu_handler::MenuHandler, status_bar::StatusBar},
+    crossterm::{event, terminal},
+    std::{io::Result, time::Duration},
 };
 
 pub mod keys;
@@ -39,7 +27,12 @@ impl EventHandler {
         self.resize_to(menu_handler, width, height)
     }
 
-    pub fn resize_to(&mut self, menu_handler: &mut MenuHandler, width: u16, height: u16) -> Result<()> {
+    pub fn resize_to(
+        &mut self,
+        menu_handler: &mut MenuHandler,
+        width: u16,
+        height: u16,
+    ) -> Result<()> {
         Self::resize_main_menu(&mut menu_handler.main_menu, width, height);
         Self::resize_sub_menu(&mut menu_handler.sub_menu, width, height);
 
@@ -62,11 +55,7 @@ impl EventHandler {
         }
         main_menu.height = cast!(height);
 
-        main_menu.height -= if main_menu.height != 0 {
-            1
-        } else {
-            0
-        }
+        main_menu.height -= if main_menu.height != 0 { 1 } else { 0 }
     }
     fn resize_sub_menu(sub_menu: &mut Menu, width: u16, height: u16) {
         let x: usize = match width {
@@ -83,25 +72,26 @@ impl EventHandler {
         sub_menu.y = 1;
         sub_menu.height = cast!(height);
 
-        sub_menu.height -= if sub_menu.height != 0 {
-            1
-        } else {
-            0
-        }
+        sub_menu.height -= if sub_menu.height != 0 { 1 } else { 0 }
     }
 
-    pub fn update(&mut self, menu_handler: &mut MenuHandler, status_bar: &mut StatusBar) -> Result<()> {
+    pub fn update(
+        &mut self,
+        menu_handler: &mut MenuHandler,
+        status_bar: &mut StatusBar,
+    ) -> Result<()> {
         if event::poll(Duration::from_millis(config::FRAME_RATE_MS))? {
             let event: event::Event = event::read()?;
 
             match event {
                 event::Event::Key(key_event) => {
-                    self.key_event_handler.update(key_event, menu_handler, status_bar)?;
-                },
+                    self.key_event_handler
+                        .update(key_event, menu_handler, status_bar)?;
+                }
                 event::Event::Resize(_, _) => {
                     self.resize(menu_handler)?;
                 }
-                _ => {},
+                _ => {}
             }
         }
 

@@ -2,27 +2,14 @@ use {
     crate::{
         event_handler::keys::Binding,
         menu::Menu,
-        menu_handler::{
-            MenuHandler,
-            SwitchSongCallback,
-        },
-        status_bar::{
-            self,
-            StatusBar,
-        },
+        menu_handler::{MenuHandler, SwitchSongCallback},
+        status_bar::{self, StatusBar},
     },
     crossterm::{
-        event::{
-            KeyEvent,
-            KeyCode,
-            KeyModifiers,
-        },
+        event::{KeyCode, KeyEvent, KeyModifiers},
         style::Color,
     },
-    std::{
-        cmp::Ordering,
-        time::Duration,
-    },
+    std::{cmp::Ordering, time::Duration},
 };
 
 pub const PLAYLISTS_DIRECTORY: &str = "/path/to/your/playlists";
@@ -47,11 +34,12 @@ pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
         menu_handler.switch_song_to(next_song);
     },
     |menu_handler: &mut MenuHandler| {
-        let next_song: usize = if menu_handler.sub_menu.selected + 1 > menu_handler.get_current_playlist().len() {
-            0
-        } else {
-            menu_handler.sub_menu.selected + 1
-        };
+        let next_song: usize =
+            if menu_handler.sub_menu.selected + 1 > menu_handler.get_current_playlist().len() {
+                0
+            } else {
+                menu_handler.sub_menu.selected + 1
+            };
 
         menu_handler.switch_song_to(next_song);
     },
@@ -59,35 +47,35 @@ pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
         menu_handler.switch_song_to(menu_handler.sub_menu.selected);
     },
 ];
-pub const SWITCH_SONG_CALLBACK_NAMES: [&str; SWITCH_SONG_CALLBACKS.len()] = [
-    "random",
-    "next",
-    "loop",
-];
+pub const SWITCH_SONG_CALLBACK_NAMES: [&str; SWITCH_SONG_CALLBACKS.len()] =
+    ["random", "next", "loop"];
 
 pub fn init_key_bindings() -> Vec<Binding> {
     enum CursorDirection {
-        X, Y,
-        Top, Bottom,
+        X,
+        Y,
+        Top,
+        Bottom,
         Selected,
     }
     fn move_cursor(cursor_direction: CursorDirection, step: isize, menu_handler: &mut MenuHandler) {
         let menus: [&mut Menu; 2] = [&mut menu_handler.main_menu, &mut menu_handler.sub_menu];
 
         match cursor_direction {
-            CursorDirection::X => {
-                match step.cmp(&0) {
-                    Ordering::Greater => menu_handler.selected_menu = 1,
-                    Ordering::Less => menu_handler.selected_menu = 0,
-                    _ => {},
-                }
+            CursorDirection::X => match step.cmp(&0) {
+                Ordering::Greater => menu_handler.selected_menu = 1,
+                Ordering::Less => menu_handler.selected_menu = 0,
+                _ => {}
             },
             CursorDirection::Y => menus[menu_handler.selected_menu].move_cursor(step),
 
             CursorDirection::Top => menus[menu_handler.selected_menu].cursor = 0,
             CursorDirection::Bottom => menus[menu_handler.selected_menu].cursor = usize::MAX,
 
-            CursorDirection::Selected => menus[menu_handler.selected_menu].cursor = menus[menu_handler.selected_menu].selected,
+            CursorDirection::Selected => {
+                menus[menu_handler.selected_menu].cursor =
+                    menus[menu_handler.selected_menu].selected
+            }
         }
 
         menu_handler.redraw = true;
@@ -104,114 +92,110 @@ pub fn init_key_bindings() -> Vec<Binding> {
                 } else {
                     menu_handler.switch_song_callback -= 1;
                 }
-            },
+            }
             SwitchSongCallbackDirection::Right => {
                 menu_handler.switch_song_callback += 1;
                 if menu_handler.switch_song_callback >= SWITCH_SONG_CALLBACKS.len() {
                     menu_handler.switch_song_callback = 0;
                 }
-            },
+            }
         }
     }
 
     vec![
         // quit
         Binding::new(
-            vec![
-              KeyEvent::new( KeyCode::Char('q'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { menu_handler.running = false; },
+            vec![KeyEvent::new(KeyCode::Char('q'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                menu_handler.running = false;
+            },
         ),
         // cursor movement
         Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('h'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::X, -1, menu_handler); },
+            vec![KeyEvent::new(KeyCode::Char('h'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::X, -1, menu_handler);
+            },
+        ),
+        Binding::new(
+            vec![KeyEvent::new(KeyCode::Char('j'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::Y, 1, menu_handler);
+            },
+        ),
+        Binding::new(
+            vec![KeyEvent::new(KeyCode::Char('k'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::Y, -1, menu_handler);
+            },
+        ),
+        Binding::new(
+            vec![KeyEvent::new(KeyCode::Char('l'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::X, 1, menu_handler);
+            },
+        ),
+        Binding::new(
+            vec![KeyEvent::new(KeyCode::Char('G'), KeyModifiers::SHIFT)],
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::Bottom, 0, menu_handler);
+            },
         ),
         Binding::new(
             vec![
-                KeyEvent::new( KeyCode::Char('j'), KeyModifiers::NONE ),
+                KeyEvent::new(KeyCode::Char('g'), KeyModifiers::NONE),
+                KeyEvent::new(KeyCode::Char('g'), KeyModifiers::NONE),
             ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Y, 1, menu_handler); },
-        ),
-        Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('k'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Y, -1, menu_handler); },
-        ),
-        Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('l'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::X, 1, menu_handler); },
-        ),
-        Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('G'), KeyModifiers::SHIFT ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Bottom, 0, menu_handler); },
-        ),
-        Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
-                KeyEvent::new( KeyCode::Char('g'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Top, 0, menu_handler); },
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::Top, 0, menu_handler);
+            },
         ),
         // return to selected item
         Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('r'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { move_cursor(CursorDirection::Selected, 0, menu_handler); },
+            vec![KeyEvent::new(KeyCode::Char('r'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                move_cursor(CursorDirection::Selected, 0, menu_handler);
+            },
         ),
         // switch song
         Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('s'), KeyModifiers::NONE ),
-            ],
-            |menu_handler: &mut MenuHandler, _| { menu_handler.switch_song(); }
+            vec![KeyEvent::new(KeyCode::Char('s'), KeyModifiers::NONE)],
+            |menu_handler: &mut MenuHandler, _| {
+                menu_handler.switch_song();
+            },
         ),
         // select menu
         Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Enter, KeyModifiers::NONE ),
-            ],
+            vec![KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE)],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
                 match menu_handler.selected_menu {
                     0 => {
                         menu_handler.change_sub_menu(menu_handler.main_menu.cursor);
-                    },
+                    }
                     1 => {
                         menu_handler.switch_song_to(menu_handler.sub_menu.cursor);
-                    },
+                    }
                     _ => unreachable!(),
                 }
 
                 status_bar.force_update = true;
                 menu_handler.redraw = true;
-            }
+            },
         ),
         // switch switch song callback
         Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('H'), KeyModifiers::SHIFT ),
-            ],
+            vec![KeyEvent::new(KeyCode::Char('H'), KeyModifiers::SHIFT)],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
                 switch_song(SwitchSongCallbackDirection::Left, menu_handler);
                 status_bar.force_update = true;
-            }
+            },
         ),
         Binding::new(
-            vec![
-                KeyEvent::new( KeyCode::Char('L'), KeyModifiers::SHIFT ),
-            ],
+            vec![KeyEvent::new(KeyCode::Char('L'), KeyModifiers::SHIFT)],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
                 switch_song(SwitchSongCallbackDirection::Right, menu_handler);
                 status_bar.force_update = true;
-            }
+            },
         ),
     ]
 }
@@ -225,7 +209,10 @@ const fn separator() -> status_bar::ModuleHandler {
 }
 pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
     separator(),
-    status_bar::ModuleHandler::new(Color::White, Color::Black, Some(Duration::from_secs(1)), 
+    status_bar::ModuleHandler::new(
+        Color::White,
+        Color::Black,
+        Some(Duration::from_secs(1)),
         |menu_handler: &MenuHandler| {
             const PHASES: [&str; 10] = [
                 "[         ]",
@@ -243,8 +230,10 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             let current_duration: Duration = menu_handler.audio_handler.play_duration();
             let current_duration: u64 = current_duration.as_secs();
 
-            let current_source_duration: Option<Duration> = menu_handler.audio_handler.current_source_duration;
-            let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0 {
+            let current_source_duration: Option<Duration> =
+                menu_handler.audio_handler.current_source_duration;
+            let play_percentage: f32 = if current_source_duration.is_some() && current_duration != 0
+            {
                 let current_source_duration: Duration = current_source_duration.unwrap();
                 let current_source_duration: u64 = current_source_duration.as_secs();
 
@@ -263,24 +252,37 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             } else {
                 PHASES[play_percentage].to_string()
             }
-        }
+        },
     ),
     separator(),
     // play change song callback name
-    status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
+    status_bar::ModuleHandler::new(
+        Color::White,
+        Color::Black,
+        None,
         |menu_handler: &MenuHandler| {
             SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string()
-        }),
+        },
+    ),
     // current playlist
     separator(),
-    status_bar::ModuleHandler::new(Color::White, Color::Black, None, 
+    status_bar::ModuleHandler::new(
+        Color::White,
+        Color::Black,
+        None,
         |menu_handler: &MenuHandler| {
             menu_handler.playlist_names[menu_handler.main_menu.selected].clone()
-        }),
+        },
+    ),
     separator(),
-    status_bar::ModuleHandler::new(Color::Red, Color::Black, None, 
+    status_bar::ModuleHandler::new(
+        Color::Red,
+        Color::Black,
+        None,
         |menu_handler: &MenuHandler| {
-            menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected].clone()
-        }),
+            menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected]
+                .clone()
+        },
+    ),
     separator(),
 ];

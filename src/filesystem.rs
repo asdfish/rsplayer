@@ -1,10 +1,6 @@
 use std::{
+    fs::{read_dir, DirEntry, FileType},
     io::Result,
-    fs::{
-        DirEntry,
-        FileType,
-        read_dir,
-    },
 };
 
 pub enum EntryType {
@@ -19,7 +15,6 @@ fn directory_entry_is_entry_type(directory_entry: &DirEntry, entry_type: &EntryT
     }
     let file_type: FileType = file_type.unwrap();
 
-
     match entry_type {
         EntryType::Directory => file_type.is_dir(),
         EntryType::File => file_type.is_file(),
@@ -32,7 +27,7 @@ pub fn get_entries(path: &str, entry_type: EntryType) -> Result<Vec<String>> {
     for entry in read_dir(path)? {
         match entry {
             Result::Ok(entry) => {
-                if ! directory_entry_is_entry_type(&entry, &entry_type) {
+                if !directory_entry_is_entry_type(&entry, &entry_type) {
                     continue;
                 }
 
@@ -40,7 +35,7 @@ pub fn get_entries(path: &str, entry_type: EntryType) -> Result<Vec<String>> {
                     Ok(file_name) => entries.push(file_name),
                     _ => continue,
                 }
-            },
+            }
             _ => continue,
         }
     }

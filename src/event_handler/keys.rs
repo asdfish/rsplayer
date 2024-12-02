@@ -1,13 +1,8 @@
 use {
-    crate::{
-        cast,
-        menu_handler::MenuHandler,
-        status_bar::StatusBar,
-    },
+    crate::{cast, menu_handler::MenuHandler, status_bar::StatusBar},
     crossterm::event,
     std::io::Result,
 };
-
 
 pub struct Binding {
     pub key_events: Vec<event::KeyEvent>,
@@ -31,7 +26,7 @@ impl KeyEventHandler {
     pub fn new(key_bindings: Vec<Binding>) -> KeyEventHandler {
         let mut event_handler: KeyEventHandler = KeyEventHandler {
             key_bindings,
-            key_events: Vec::new()
+            key_events: Vec::new(),
         };
 
         let mut max_key_binding_length = 0;
@@ -44,7 +39,12 @@ impl KeyEventHandler {
         event_handler
     }
 
-    pub fn update(&mut self, event: event::KeyEvent, menu_handler: &mut MenuHandler, status_bar: &mut StatusBar) -> Result<()> {
+    pub fn update(
+        &mut self,
+        event: event::KeyEvent,
+        menu_handler: &mut MenuHandler,
+        status_bar: &mut StatusBar,
+    ) -> Result<()> {
         self.key_events.push(event);
 
         let mut same_event_id: i32 = -1;
@@ -79,7 +79,9 @@ impl KeyEventHandler {
 
         for model_key in model {
             for follower_key in follower {
-                if model_key.code != follower_key.code || model_key.modifiers != follower_key.modifiers {
+                if model_key.code != follower_key.code
+                    || model_key.modifiers != follower_key.modifiers
+                {
                     return false;
                 }
             }
@@ -94,7 +96,9 @@ impl KeyEventHandler {
 
         for follower_key in follower {
             for model_key in model {
-                if follower_key.code != model_key.code || follower_key.modifiers != model_key.modifiers {
+                if follower_key.code != model_key.code
+                    || follower_key.modifiers != model_key.modifiers
+                {
                     return false;
                 }
             }

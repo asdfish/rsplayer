@@ -1,12 +1,6 @@
-use std::io::{
-    self,
-    Result
-};
+use std::io::{self, Result};
 
-use crossterm::{
-    style,
-    QueueableCommand,
-};
+use crossterm::{style, QueueableCommand};
 
 #[inline(always)]
 pub fn bounded_text(width: usize, display_text: &String) -> Result<()> {
@@ -40,13 +34,11 @@ pub fn empty_text(width: usize) -> Result<()> {
 }
 #[inline(always)]
 pub fn text(text: String) -> Result<()> {
-    io::stdout()
-        .queue(style::Print(text))?;
+    io::stdout().queue(style::Print(text))?;
     Result::Ok(())
 }
 #[inline(always)]
 pub fn text_borrow(text: &String) -> Result<()> {
-    io::stdout()
-        .queue(style::Print(text))?;
+    io::stdout().queue(style::Print(text))?;
     Result::Ok(())
 }

@@ -1,21 +1,9 @@
 use {
-    crate::{
-        cast,
-        config,
-        wrappers,
-        event_handler::EventHandler,
-        menu_handler::MenuHandler,
-    },
-    crossterm::{
-        self,
-        style::Color,
-    },
+    crate::{cast, config, event_handler::EventHandler, menu_handler::MenuHandler, wrappers},
+    crossterm::{self, style::Color},
     std::{
         io::Result,
-        time::{
-            Duration,
-            Instant,
-        },
+        time::{Duration, Instant},
     },
 };
 
@@ -92,7 +80,12 @@ pub struct ModuleHandler {
     last_update: Option<Instant>,
 }
 impl ModuleHandler {
-    pub const fn new(foreground: Color, background: Color, update_interval: Option<Duration>, update_callback: ModuleCallback) -> ModuleHandler {
+    pub const fn new(
+        foreground: Color,
+        background: Color,
+        update_interval: Option<Duration>,
+        update_callback: ModuleCallback,
+    ) -> ModuleHandler {
         ModuleHandler {
             foreground,
             background,
@@ -126,7 +119,9 @@ impl ModuleHandler {
 
         let now: Instant = Instant::now();
 
-        if self.last_update.is_none() || now.duration_since(self.last_update.unwrap()) > self.update_interval.unwrap() {
+        if self.last_update.is_none()
+            || now.duration_since(self.last_update.unwrap()) > self.update_interval.unwrap()
+        {
             self.last_update = Some(now);
             self.update_force(menu_handler);
             return true;

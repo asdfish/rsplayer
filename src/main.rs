@@ -13,14 +13,8 @@ use {
     event_handler::EventHandler,
     menu_handler::MenuHandler,
     status_bar::StatusBar,
-    std::io::{
-        stdout,
-        Write,
-    },
-    system::{
-        init,
-        uninit,
-    },
+    std::io::{stdout, Write},
+    system::{init, uninit},
 };
 
 fn main() {
@@ -36,8 +30,7 @@ fn main() {
         let _ = status_bar.draw(&event_handler);
         let _ = menu_handler.draw();
 
-        stdout()
-            .flush().unwrap();
+        stdout().flush().unwrap();
 
         status_bar.update(&menu_handler);
         let _ = event_handler.update(&mut menu_handler, &mut status_bar);

@@ -1,15 +1,6 @@
 use {
-    std::{
-        io::BufReader,
-        fs::File,
-        time::Duration,
-    },
-    rodio::{
-        Decoder,
-        OutputStream,
-        Sink,
-        Source,
-    },
+    rodio::{Decoder, OutputStream, Sink, Source},
+    std::{fs::File, io::BufReader, time::Duration},
 };
 
 pub struct AudioHandler {
