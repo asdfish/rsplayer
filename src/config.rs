@@ -207,19 +207,54 @@ pub fn init_key_bindings() -> Vec<Binding> {
     ]
 }
 
-pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 9];
-fn separator_callback(_: &MenuHandler) -> String {
-    String::from(" | ")
-}
-const fn separator() -> status_bar::ModuleHandler {
-    status_bar::ModuleHandler::new(Color::White, Color::Black, None, separator_callback, None)
+const COLORS: [Color; 4] = [
+    Color::Rgb {
+        r: 0xdd,
+        g: 0x2d,
+        b: 0x3a,
+    },
+    Color::Rgb {
+        r: 0x9b,
+        g: 0x13,
+        b: 0x26,
+    },
+    Color::Rgb {
+        r: 0x88,
+        g: 0x0d,
+        b: 0x1e,
+    },
+    STATUS_BAR_BACKGROUND,
+];
+
+const fn separator(color_index: usize) -> status_bar::ModuleHandler {
+    status_bar::ModuleHandler::new(
+        COLORS[color_index],
+        COLORS[color_index + 1],
+        None,
+        |_| "".to_string(),
+        None,
+    )
 }
 
-pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
-    separator(),
+const fn module_handler(
+    color_index: usize,
+    update_interval: Option<Duration>,
+    update_callback: status_bar::ModuleCallback,
+    signal_callback: Option<status_bar::SignalCallback>,
+) -> status_bar::ModuleHandler {
     status_bar::ModuleHandler::new(
         Color::White,
-        Color::Black,
+        COLORS[color_index],
+        update_interval,
+        update_callback,
+        signal_callback,
+    )
+}
+
+pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 6];
+pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
+    module_handler(
+        0,
         Some(Duration::from_secs(1)),
         |menu_handler: &MenuHandler| {
             const PHASES: [&str; 10] = [
@@ -263,11 +298,10 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
         },
         None,
     ),
-    separator(),
+    separator(0),
     // play change song callback name
-    status_bar::ModuleHandler::new(
-        Color::White,
-        Color::Black,
+    module_handler(
+        1,
         None,
         |menu_handler: &MenuHandler| {
             SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string()
@@ -285,46 +319,38 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
         ),
     ),
     // current playlist
-    separator(),
-    status_bar::ModuleHandler::new(
-        Color::White,
-        Color::Black,
+    separator(1),
+    module_handler(
+        2,
         None,
         |menu_handler: &MenuHandler| {
-            menu_handler.playlist_names[menu_handler.main_menu.selected].clone()
+            let mut output: String =
+                String::from(&menu_handler.playlist_names[menu_handler.main_menu.selected]);
+            output.push_str(": ");
+            output.push_str(
+                &menu_handler.playlists[menu_handler.main_menu.selected]
+                    [menu_handler.sub_menu.selected],
+            );
+
+            output
         },
         Some(
             |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-                if signals[StatusBarModuleSignal::ChangedSong] {
-                    return Some(
-                        menu_handler.playlist_names[menu_handler.main_menu.selected].clone(),
-                    );
+                if !signals[StatusBarModuleSignal::ChangedSong] {
+                    return None;
                 }
-                None
+
+                let mut output: String =
+                    String::from(&menu_handler.playlist_names[menu_handler.main_menu.selected]);
+                output.push_str(": ");
+                output.push_str(
+                    &menu_handler.playlists[menu_handler.main_menu.selected]
+                        [menu_handler.sub_menu.selected],
+                );
+
+                Some(output)
             },
         ),
     ),
-    separator(),
-    status_bar::ModuleHandler::new(
-        Color::Red,
-        Color::Black,
-        None,
-        |menu_handler: &MenuHandler| {
-            menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected]
-                .clone()
-        },
-        Some(
-            |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-                if signals[StatusBarModuleSignal::ChangedSong] {
-                    return Some(
-                        menu_handler.playlists[menu_handler.main_menu.selected]
-                            [menu_handler.sub_menu.selected]
-                            .clone(),
-                    );
-                }
-                None
-            },
-        ),
-    ),
-    separator(),
+    separator(2),
 ];

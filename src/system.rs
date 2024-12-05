@@ -39,7 +39,7 @@ fn init_hooks() {
             FALSE
         }
 
-        if 0 == unsafe { SetConsoleCtrlHandler(Some(ctrl_handler), TRUE) } {
+        if FALSE == unsafe { SetConsoleCtrlHandler(Some(ctrl_handler), TRUE) } {
             println!("Failed to set ConsoleCtrlHandler");
             uninit();
         }
