@@ -290,11 +290,12 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             };
 
             let play_percentage: usize = ((PHASES.len() as f32) * play_percentage) as usize;
-            if play_percentage >= PHASES.len() {
-                PHASES[PHASES.len() - 1].to_string()
-            } else {
-                PHASES[play_percentage].to_string()
-            }
+            format!(" {} ",
+                if play_percentage >= PHASES.len() {
+                    PHASES[PHASES.len() - 1].to_string()
+                } else {
+                    PHASES[play_percentage].to_string()
+                })
         },
         None,
     ),
@@ -310,8 +311,8 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
                 if signals[StatusBarModuleSignal::ChangedSwitchSongCallback] {
                     return Some(
-                        SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string(),
-                    );
+                        format!(" {} ",
+                            &SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback]));
                 }
 
                 None
@@ -324,15 +325,9 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
         2,
         None,
         |menu_handler: &MenuHandler| {
-            let mut output: String =
-                String::from(&menu_handler.playlist_names[menu_handler.main_menu.selected]);
-            output.push_str(": ");
-            output.push_str(
-                &menu_handler.playlists[menu_handler.main_menu.selected]
-                    [menu_handler.sub_menu.selected],
-            );
-
-            output
+            format!(" {}: {} ",
+                &menu_handler.playlist_names[menu_handler.main_menu.selected],
+                &menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected])
         },
         Some(
             |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
@@ -340,15 +335,11 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
                     return None;
                 }
 
-                let mut output: String =
-                    String::from(&menu_handler.playlist_names[menu_handler.main_menu.selected]);
-                output.push_str(": ");
-                output.push_str(
-                    &menu_handler.playlists[menu_handler.main_menu.selected]
-                        [menu_handler.sub_menu.selected],
-                );
-
-                Some(output)
+                Some(
+                    format!(" {}: {} ",
+                        &menu_handler.playlist_names[menu_handler.main_menu.selected],
+                        &menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected])
+                )
             },
         ),
     ),

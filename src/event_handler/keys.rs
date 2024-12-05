@@ -36,6 +36,7 @@ impl KeyEventHandler {
             }
         }
         event_handler.key_events.reserve(max_key_binding_length);
+
         event_handler
     }
 

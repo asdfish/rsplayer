@@ -28,3 +28,7 @@ signal-hook = "0.3.17"
 codegen-units = 1
 strip = "symbols"
 lto = "fat"
+panic = "abort"
+
+[profile.dev]
+lto = "off"
