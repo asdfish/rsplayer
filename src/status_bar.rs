@@ -11,14 +11,14 @@ use {
 pub type ModuleCallback = fn(menu_handler: &MenuHandler) -> String;
 pub type SignalCallback = fn(
     menu_handler: &MenuHandler,
-    signals: &EnumMap<config::StatusBarModuleSignal, bool>,
+    signals: &EnumMap<config::ModuleSignal, bool>,
 ) -> Option<String>;
 
 pub struct StatusBar {
     redraw: bool,
     force_update: bool,
-    module_handlers: config::StatusBarModuleHandlersType,
-    pub signals: EnumMap<config::StatusBarModuleSignal, bool>,
+    module_handlers: config::ModuleHandlersType,
+    pub signals: EnumMap<config::ModuleSignal, bool>,
 }
 impl StatusBar {
     pub fn new() -> StatusBar {
@@ -167,7 +167,7 @@ impl ModuleHandler {
     pub fn update_signals(
         &mut self,
         menu_handler: &MenuHandler,
-        signals: &EnumMap<config::StatusBarModuleSignal, bool>,
+        signals: &EnumMap<config::ModuleSignal, bool>,
     ) -> bool {
         let Some(callback) = self.signal_callback else {
             return false;

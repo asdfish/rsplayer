@@ -26,7 +26,7 @@ pub const SELECTED_BACKGROUND_REVERSED: Color = Color::White;
 
 pub const STATUS_BAR_BACKGROUND: Color = Color::Black;
 
-pub const FRAME_RATE_MS: u64 = 1000 / 24;
+pub const FRAME_RATE_MS: u64 = 1000 / 12;
 
 pub const SWITCH_SONG_CALLBACKS: [SwitchSongCallback; 3] = [
     |menu_handler: &mut MenuHandler| {
@@ -52,7 +52,7 @@ pub const SWITCH_SONG_CALLBACK_NAMES: [&str; SWITCH_SONG_CALLBACKS.len()] =
     ["random", "next", "loop"];
 
 #[derive(Enum)]
-pub enum StatusBarModuleSignal {
+pub enum ModuleSignal {
     ChangedSong,
     ChangedSwitchSongCallback,
 }
@@ -185,7 +185,7 @@ pub fn init_key_bindings() -> Vec<Binding> {
                     _ => unreachable!(),
                 }
 
-                status_bar.signals[StatusBarModuleSignal::ChangedSong] = true;
+                status_bar.signals[ModuleSignal::ChangedSong] = true;
                 menu_handler.redraw = true;
             },
         ),
@@ -194,14 +194,14 @@ pub fn init_key_bindings() -> Vec<Binding> {
             vec![KeyEvent::new(KeyCode::Char('H'), KeyModifiers::SHIFT)],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
                 switch_song(SwitchSongCallbackDirection::Left, menu_handler);
-                status_bar.signals[StatusBarModuleSignal::ChangedSwitchSongCallback] = true;
+                status_bar.signals[ModuleSignal::ChangedSwitchSongCallback] = true;
             },
         ),
         Binding::new(
             vec![KeyEvent::new(KeyCode::Char('L'), KeyModifiers::SHIFT)],
             |menu_handler: &mut MenuHandler, status_bar: &mut StatusBar| {
                 switch_song(SwitchSongCallbackDirection::Right, menu_handler);
-                status_bar.signals[StatusBarModuleSignal::ChangedSwitchSongCallback] = true;
+                status_bar.signals[ModuleSignal::ChangedSwitchSongCallback] = true;
             },
         ),
     ]
@@ -251,8 +251,8 @@ const fn module_handler(
     )
 }
 
-pub type StatusBarModuleHandlersType = [status_bar::ModuleHandler; 6];
-pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
+pub type ModuleHandlersType = [status_bar::ModuleHandler; 6];
+pub const STATUS_BAR_MODULE_HANDLERS: ModuleHandlersType = [
     module_handler(
         0,
         Some(Duration::from_secs(1)),
@@ -308,8 +308,8 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
             SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback].to_string()
         },
         Some(
-            |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-                if signals[StatusBarModuleSignal::ChangedSwitchSongCallback] {
+            |menu_handler: &MenuHandler, signals: &EnumMap<ModuleSignal, bool>| {
+                if signals[ModuleSignal::ChangedSwitchSongCallback] {
                     return Some(
                         format!(" {} ",
                             &SWITCH_SONG_CALLBACK_NAMES[menu_handler.switch_song_callback]));
@@ -330,8 +330,8 @@ pub const STATUS_BAR_MODULE_HANDLERS: StatusBarModuleHandlersType = [
                 &menu_handler.playlists[menu_handler.main_menu.selected][menu_handler.sub_menu.selected])
         },
         Some(
-            |menu_handler: &MenuHandler, signals: &EnumMap<StatusBarModuleSignal, bool>| {
-                if !signals[StatusBarModuleSignal::ChangedSong] {
+            |menu_handler: &MenuHandler, signals: &EnumMap<ModuleSignal, bool>| {
+                if !signals[ModuleSignal::ChangedSong] {
                     return None;
                 }
 
