@@ -40,11 +40,10 @@ impl MenuHandler {
             )?);
         }
 
-        for i in 0..playlists.len() {
-            if playlists[i].is_empty() {
-                playlists.remove(i);
-            }
-        }
+        let playlists: Vec<Vec<String>> = playlists.into_iter()
+            .filter(|i| ! i.is_empty())
+            .collect();
+
         if playlists.is_empty() {
             panic!("No playlists were found");
         }
