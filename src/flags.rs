@@ -1,11 +1,17 @@
 use {
     getargs::{Opt, Options},
-    std::collections::HashMap,
-    thiserror::Error,
+    std::{
+        collections::HashMap,
+        fmt::{Display, Formatter},
+    },
     unicode_width::UnicodeWidthStr,
 };
 
-type FlagOperation = fn(config: &mut Config, arg: Option<&'static str>, flag: Opt<&'static str>) -> Result<(), FlagOperationError>;
+type FlagOperation = fn(
+    config: &mut Config,
+    arg: Option<&'static str>,
+    flag: Opt<&'static str>,
+) -> Result<(), FlagError>;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Config {
@@ -15,13 +21,11 @@ pub struct Config {
     quit: bool,
 }
 impl Config {
-    pub fn new() -> Result<Self, FlagOperationError> {
-        let mut opts = Options::<&'static str, _>::new(argv::iter().skip(1).flat_map(|arg| arg.to_str()));
+    pub fn new() -> Result<Self, FlagError> {
+        let mut opts =
+            Options::<&'static str, _>::new(argv::iter().skip(1).flat_map(|arg| arg.to_str()));
 
-        let opt_lookup: HashMap<
-            Opt<&'static str>,
-            FlagOperation,
-        > = HashMap::from_iter(
+        let opt_lookup: HashMap<Opt<&'static str>, FlagOperation> = HashMap::from_iter(
             FLAGS
                 .iter()
                 .map(|flag| (flag.to_opts(), flag.operation))
@@ -35,11 +39,14 @@ impl Config {
         };
 
         while let Ok(Some(opt)) = opts.next_opt() {
-            if let Some(operation) = opt_lookup.get(&opt) {
-                operation(&mut out, opts.value_opt(), opt)?;
-                if out.quit {
-                    break;
-                }
+            (opt_lookup
+                .get(&opt)
+                .ok_or(FlagErrorKind::Unknown.new(opt))?)(
+                &mut out, opts.value_opt(), opt
+            )?;
+
+            if out.quit {
+                break;
             }
         }
 
@@ -61,41 +68,41 @@ impl Flag {
             String::from_iter((0..n).map(|_| ' '))
         }
 
-        let max_long = flags.iter()
+        let max_long = flags
+            .iter()
             .map(|flag| flag.long.width())
             .max()
             .unwrap_or_default();
 
-        flags.iter()
-            .for_each(|flag| {
-                let padding = create_padding(max_long - flag.long.width());
-                let mut line = format!(" -{} --{}{} ", flag.short, flag.long, padding);
-                let line_start_len = line.width();
-                let mut line_padding = None;
+        flags.iter().for_each(|flag| {
+            let padding = create_padding(max_long - flag.long.width());
+            let mut line = format!(" -{} --{}{} ", flag.short, flag.long, padding);
+            let line_start_len = line.width();
+            let mut line_padding = None;
 
-                let mut current_x = 0;
+            let mut current_x = 0;
 
-                for word in flag.help.split(' ') {
-                    line.push_str(word);
-                    line.push(' ');
-                    current_x += word.width();
+            for word in flag.help.split(' ') {
+                line.push_str(word);
+                line.push(' ');
+                current_x += word.width();
 
-                    if current_x > 40 {
-                        line.push('\n');
-                        let line_padding = match line_padding {
-                            Some(ref padding) => padding,
-                            None => {
-                                line_padding = Some(create_padding(line_start_len));
-                                line_padding.as_ref().unwrap()
-                            }
-                        };
-                        line.push_str(line_padding);
-                        current_x = 0;
-                    }
+                if current_x > 40 {
+                    line.push('\n');
+                    let line_padding = match line_padding {
+                        Some(ref padding) => padding,
+                        None => {
+                            line_padding = Some(create_padding(line_start_len));
+                            line_padding.as_ref().unwrap()
+                        }
+                    };
+                    line.push_str(line_padding);
+                    current_x = 0;
                 }
+            }
 
-                println!("{}", line);
-            });
+            println!("{}", line);
+        });
     }
     pub const fn to_opts(self) -> [Opt<&'static str>; 2] {
         [Opt::Short(self.short), Opt::Long(self.long)]
@@ -107,7 +114,7 @@ const FLAGS: &[Flag] = &[
         .long("device")
         .help("Change the device used to play audio.")
         .operation(|config, device, flag| {
-            config.device = Some(device.ok_or(FlagOperationError::MissingOption(flag))?);
+            config.device = Some(device.ok_or(FlagErrorKind::Missing.new(flag))?);
             Ok(())
         })
         .build(),
@@ -116,9 +123,11 @@ const FLAGS: &[Flag] = &[
         .long("help")
         .help("Print this message and exit.")
         .operation(|config, _, _| {
-            println!("Usage: fplayer [OPTIONS]...
+            println!(
+                "Usage: fplayer [OPTIONS]...
 
-Options:");
+Options:"
+            );
             Flag::print_help(FLAGS);
             config.quit = true;
             Ok(())
@@ -129,7 +138,11 @@ Options:");
         .long("version")
         .help("Print version information and exit.")
         .operation(|config, _, _| {
-            println!(concat!(env!("CARGO_PKG_NAME"), " ", env!("CARGO_PKG_VERSION")));
+            println!(concat!(
+                env!("CARGO_PKG_NAME"),
+                " ",
+                env!("CARGO_PKG_VERSION")
+            ));
             config.quit = true;
             Ok(())
         })
@@ -171,17 +184,40 @@ impl FlagBuilder {
         self.help = Some(help);
         self
     }
-    pub const fn operation(
-        mut self,
-        operation: FlagOperation,
-    ) -> Self {
+    pub const fn operation(mut self, operation: FlagOperation) -> Self {
         self.operation = Some(operation);
         self
     }
 }
 
-#[derive(Debug, Error)]
-pub enum FlagOperationError {
-    #[error("Flag `{0}` is missing a required argument.")]
-    MissingOption(Opt<&'static str>),
+#[derive(Clone, Copy, Debug)]
+pub struct FlagError {
+    flag: Opt<&'static str>,
+    kind: FlagErrorKind,
+}
+impl Display for FlagError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self.kind {
+            FlagErrorKind::Missing => {
+                write!(f, "Flag `{}` is missing a required argument", self.flag)
+            }
+            FlagErrorKind::Unknown => write!(
+                f,
+                "Unknown flag `{}`. See `rsplayer --help` for flags.",
+                self.flag
+            ),
+        }
+    }
+}
+impl std::error::Error for FlagError {}
+
+#[derive(Clone, Copy, Debug)]
+enum FlagErrorKind {
+    Missing,
+    Unknown,
+}
+impl FlagErrorKind {
+    pub const fn new(self, flag: Opt<&'static str>) -> FlagError {
+        FlagError { flag, kind: self }
+    }
 }

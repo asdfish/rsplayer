@@ -1,12 +1,11 @@
 pub mod flags;
 
-use std::{
-    boxed::Box,
-    error::Error,
-};
+use flags::Config;
 
-pub fn main() -> Result<(), Box<dyn Error>> {
-    use flags::Config;
+pub fn main() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+
     let conf = Config::new()?;
+
     Ok(())
 }
