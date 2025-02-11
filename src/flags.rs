@@ -114,20 +114,20 @@ impl Flag {
 }
 /// All allowed flags
 const FLAGS: &[Flag] = &[
-    FlagBuilder::new()
-        .short('d')
-        .long("device")
-        .help("Change the device used to play audio.")
-        .operation(|config, device, flag| {
+    Flag {
+        short: 'd',
+        long: "device",
+        help: "Change the device used to play audio.",
+        operation: |config, device, flag| {
             config.device = Some(device.ok_or(FlagErrorKind::Missing.new(flag))?);
             Ok(())
-        })
-        .build(),
-    FlagBuilder::new()
-        .short('h')
-        .long("help")
-        .help("Print this message and exit.")
-        .operation(|config, _, _| {
+        },
+    },
+    Flag {
+        short: 'h',
+        long: "help",
+        help: "Print this message and exit.",
+        operation: |config, _, _| {
             println!(
                 "Usage: fplayer [OPTIONS]...
 
@@ -136,13 +136,13 @@ Options:"
             Flag::print_help(FLAGS);
             config.quit = true;
             Ok(())
-        })
-        .build(),
-    FlagBuilder::new()
-        .short('v')
-        .long("version")
-        .help("Print version information and exit.")
-        .operation(|config, _, _| {
+        },
+    },
+    Flag {
+        short: 'v',
+        long: "version",
+        help: "Print version information and exit.",
+        operation: |config, _, _| {
             println!(concat!(
                 env!("CARGO_PKG_NAME"),
                 " ",
@@ -150,61 +150,9 @@ Options:"
             ));
             config.quit = true;
             Ok(())
-        })
-        .build(),
+        },
+    },
 ];
-
-/// Builder for [Flag]
-struct FlagBuilder {
-    short: Option<char>,
-    long: Option<&'static str>,
-    help: Option<&'static str>,
-    operation: Option<FlagOperation>,
-}
-impl FlagBuilder {
-    /// Constructs the [Flag]
-    ///
-    /// # Panics
-    ///
-    /// Panics if any of the fields are not initalized.
-    pub const fn build(self) -> Flag {
-        Flag {
-            short: self.short.unwrap(),
-            long: self.long.unwrap(),
-            help: self.help.unwrap(),
-            operation: self.operation.unwrap(),
-        }
-    }
-    /// Creates an empty instance
-    pub const fn new() -> Self {
-        Self {
-            short: None,
-            long: None,
-            help: None,
-            operation: None,
-        }
-    }
-    /// Set [Self::short]
-    pub const fn short(mut self, short: char) -> Self {
-        self.short = Some(short);
-        self
-    }
-    /// Set [Self::long]
-    pub const fn long(mut self, long: &'static str) -> Self {
-        self.long = Some(long);
-        self
-    }
-    /// Set [Self::help]
-    pub const fn help(mut self, help: &'static str) -> Self {
-        self.help = Some(help);
-        self
-    }
-    /// Set [Self::operation]
-    pub const fn operation(mut self, operation: FlagOperation) -> Self {
-        self.operation = Some(operation);
-        self
-    }
-}
 
 #[derive(Clone, Copy, Debug)]
 pub struct FlagError {
