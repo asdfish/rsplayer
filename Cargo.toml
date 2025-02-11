@@ -9,26 +9,6 @@ readme = "README.md"
 edition = "2021"
 
 [dependencies]
-crossterm = "0.28.1"
-enum-map = "2.7.3"
-fastrand = "2.2.0"
-rodio = { version = "0.20.1", features = [ "symphonia-all" ] }
-
-[dependencies.symphonia-core]
-version = "0.5.4"
-features = [ "opt-simd-avx", "opt-simd-neon", "opt-simd-sse" ]
-
-[target.'cfg(windows)'.dependencies]
-winapi = "0.3.9"
-
-[target.'cfg(unix)'.dependencies]
-signal-hook = "0.3.17"
-
-[profile.release]
-codegen-units = 1
-strip = "symbols"
-lto = "fat"
-panic = "abort"
-
-[profile.dev]
-lto = "off"
+cpal = "0.15.3"
+ratatui = "0.29.0"
+symphonia = { version = "0.5.4", features = ["all-codecs", "opt-simd"] }
