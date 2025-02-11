@@ -7,6 +7,12 @@ use {
     unicode_width::UnicodeWidthStr,
 };
 
+mod list;
+
+fn create_padding(n: usize) -> String {
+    String::from_iter((0..n).map(|_| ' '))
+}
+
 type FlagOperation = fn(
     config: &mut Config,
     arg: Option<&'static str>,
@@ -42,7 +48,7 @@ impl Config {
         while let Ok(Some(opt)) = opts.next_opt() {
             (opt_lookup
                 .get(&opt)
-                .ok_or(FlagErrorKind::Unknown.new(opt))?)(
+                .ok_or(FlagError::new(opt, FlagErrorKind::Unknown))?)(
                 &mut out, opts.value_opt(), opt
             )?;
 
@@ -67,9 +73,6 @@ struct Flag {
 impl Flag {
     /// Only prints the flag help section, not the entire help.
     pub fn print_help(flags: &[Self]) {
-        fn create_padding(n: usize) -> String {
-            String::from_iter((0..n).map(|_| ' '))
-        }
 
         let max_long = flags
             .iter()
@@ -79,32 +82,7 @@ impl Flag {
 
         flags.iter().for_each(|flag| {
             let padding = create_padding(max_long - flag.long.width());
-            let mut line = format!(" -{} --{}{} ", flag.short, flag.long, padding);
-            let line_start_len = line.width();
-            let mut line_padding = None;
-
-            let mut current_x = 0;
-
-            for word in flag.help.split(' ') {
-                line.push_str(word);
-                line.push(' ');
-                current_x += word.width();
-
-                if current_x > 40 {
-                    line.push('\n');
-                    let line_padding = match line_padding {
-                        Some(ref padding) => padding,
-                        None => {
-                            line_padding = Some(create_padding(line_start_len));
-                            line_padding.as_ref().unwrap()
-                        }
-                    };
-                    line.push_str(line_padding);
-                    current_x = 0;
-                }
-            }
-
-            println!("{}", line);
+            println!(" -{} --{}{} {}", flag.short, flag.long, padding, flag.help);
         });
     }
     /// Convert to both the short and long [flags][Opt]
@@ -119,7 +97,7 @@ const FLAGS: &[Flag] = &[
         long: "device",
         help: "Change the device used to play audio.",
         operation: |config, device, flag| {
-            config.device = Some(device.ok_or(FlagErrorKind::Missing.new(flag))?);
+            config.device = Some(device.ok_or(FlagError::new(flag, FlagErrorKind::Missing))?);
             Ok(())
         },
     },
@@ -129,11 +107,29 @@ const FLAGS: &[Flag] = &[
         help: "Print this message and exit.",
         operation: |config, _, _| {
             println!(
-                "Usage: fplayer [OPTIONS]...
+                "Usage: fplayer [OPTIONS]... -l[LIST]...
 
 Options:"
             );
             Flag::print_help(FLAGS);
+            config.quit = true;
+            Ok(())
+        },
+    },
+    Flag {
+        short: 'l',
+        long: "list",
+        help: "List all availiable options for a topic.",
+        operation: |config, arg, flag| {
+            let mut items = list::hash_map()
+                .get(&arg)
+                .ok_or(FlagError::new(flag, FlagErrorKind::UnknownArg { arg: arg, list: None }))?
+                .1
+                ();
+            items.sort();
+            items.into_iter()
+                .for_each(|item| println!("{}", item));
+
             config.quit = true;
             Ok(())
         },
@@ -159,6 +155,21 @@ pub struct FlagError {
     flag: Opt<&'static str>,
     kind: FlagErrorKind,
 }
+impl FlagError {
+    const fn new(flag: Opt<&'static str>, kind: FlagErrorKind) -> Self {
+        #[cfg(debug_assertions)]
+        {
+            if let FlagErrorKind::UnknownArg { list, .. } = kind {
+                debug_assert!(list::hash_map().contains_key(&list));
+            }
+        }
+
+        Self {
+            flag,
+            kind,
+        }
+    }
+}
 impl Display for FlagError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
         match self.kind {
@@ -170,6 +181,7 @@ impl Display for FlagError {
                 "Unknown flag `{}`. See `rsplayer --help` for flags.",
                 self.flag
             ),
+            FlagErrorKind::UnknownArg { arg, list } => write!(f, "Unknown argument `{}` for flag `{}`. See `rsplayer -l{}` for valid arguments.", arg.unwrap_or_default(), self.flag, list.unwrap_or_default()),
         }
     }
 }
@@ -179,9 +191,8 @@ impl std::error::Error for FlagError {}
 enum FlagErrorKind {
     Missing,
     Unknown,
-}
-impl FlagErrorKind {
-    pub const fn new(self, flag: Opt<&'static str>) -> FlagError {
-        FlagError { flag, kind: self }
-    }
+    UnknownArg {
+        arg: Option<&'static str>,
+        list: Option<&'static str>,
+    },
 }

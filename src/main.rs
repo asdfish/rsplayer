@@ -1,10 +1,7 @@
 pub mod audio;
 pub mod flags;
 
-use {
-    audio::player::Player,
-    flags::Config,
-};
+use {audio::player::Player, flags::Config};
 
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
