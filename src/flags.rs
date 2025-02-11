@@ -13,6 +13,7 @@ type FlagOperation = fn(
     flag: Opt<&'static str>,
 ) -> Result<(), FlagError>;
 
+/// Configuration from command line flags.
 #[derive(Clone, Copy, Debug)]
 pub struct Config {
     /// The suggested [device][cpal::platform::Device] to use.
@@ -58,7 +59,9 @@ impl Config {
 struct Flag {
     short: char,
     long: &'static str,
+    /// The message that gets printed for `--help`.
     help: &'static str,
+    /// A callback that gets executed if a flag matches this flag.
     operation: FlagOperation,
 }
 impl Flag {
@@ -104,10 +107,12 @@ impl Flag {
             println!("{}", line);
         });
     }
+    /// Convert to both the short and long [flags][Opt]
     pub const fn to_opts(self) -> [Opt<&'static str>; 2] {
         [Opt::Short(self.short), Opt::Long(self.long)]
     }
 }
+/// All allowed flags
 const FLAGS: &[Flag] = &[
     FlagBuilder::new()
         .short('d')
@@ -149,6 +154,7 @@ Options:"
         .build(),
 ];
 
+/// Builder for [Flag]
 struct FlagBuilder {
     short: Option<char>,
     long: Option<&'static str>,
@@ -156,6 +162,11 @@ struct FlagBuilder {
     operation: Option<FlagOperation>,
 }
 impl FlagBuilder {
+    /// Constructs the [Flag]
+    ///
+    /// # Panics
+    ///
+    /// Panics if any of the fields are not initalized.
     pub const fn build(self) -> Flag {
         Flag {
             short: self.short.unwrap(),
@@ -164,6 +175,7 @@ impl FlagBuilder {
             operation: self.operation.unwrap(),
         }
     }
+    /// Creates an empty instance
     pub const fn new() -> Self {
         Self {
             short: None,
@@ -172,18 +184,22 @@ impl FlagBuilder {
             operation: None,
         }
     }
+    /// Set [Self::short]
     pub const fn short(mut self, short: char) -> Self {
         self.short = Some(short);
         self
     }
+    /// Set [Self::long]
     pub const fn long(mut self, long: &'static str) -> Self {
         self.long = Some(long);
         self
     }
+    /// Set [Self::help]
     pub const fn help(mut self, help: &'static str) -> Self {
         self.help = Some(help);
         self
     }
+    /// Set [Self::operation]
     pub const fn operation(mut self, operation: FlagOperation) -> Self {
         self.operation = Some(operation);
         self
