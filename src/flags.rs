@@ -17,9 +17,9 @@ type FlagOperation = fn(
 #[derive(Clone, Copy, Debug)]
 pub struct Config {
     /// The suggested [device][cpal::platform::Device] to use.
-    device: Option<&'static str>,
+    pub device: Option<&'static str>,
     /// Whether or not to quit after parsing.
-    quit: bool,
+    pub quit: bool,
 }
 impl Config {
     pub fn new() -> Result<Self, FlagError> {
